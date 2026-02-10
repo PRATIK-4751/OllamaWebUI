@@ -1,0 +1,15 @@
+services:
+  ollama-webui:
+    build: .
+    container_name: ollama-webui
+    ports:
+      - "3000:80"
+    restart: always
+    environment:
+      - VITE_OLLAMA_URL=http://localhost:11434
+    networks:
+      - ollama-network
+
+networks:
+  ollama-network:
+    driver: bridge

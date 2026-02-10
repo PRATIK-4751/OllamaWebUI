@@ -16,13 +16,37 @@ This application is a **frontend-only** client. It speaks directly to your local
 
 ---
 
-## 🚀 Requirement: Ollama is Mandatory
+## 🐳 Run with Docker (Recommended)
 
-This UI **will not work** without Ollama installed on your system.
+The easiest way to run the WebUI locally is using Docker.
+
+1. **Clone & Build:**
+   ```bash
+   docker-compose up --build -d
+   ```
+2. **Access:**
+   Open `http://localhost:3000` in your browser.
+
+---
+
+## 🚀 Local Installation (Manual)
+
+If you prefer to run it manually:
+1. **Install Dependencies:** `npm install`
+2. **Launch Dev Server:** `npm run dev`
+3. **Access:** `http://localhost:3000`
+
+---
+
+## ⚙️ Requirement: Ollama with CORS
+This UI **will not work** without Ollama installed and CORS enabled.
+
 1. **Download Ollama**: [ollama.com](https://ollama.com)
-2. **Launch with CORS**: Browsers block direct connections by default. You must enable `OLLAMA_ORIGINS` to let the WebUI connect:
+2. **Launch with CORS**:
    - **Windows (PowerShell)**: `$env:OLLAMA_ORIGINS="*"; ollama serve`
    - **Mac/Linux**: `OLLAMA_ORIGINS="*" ollama serve`
+
+---
 
 ---
 
