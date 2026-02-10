@@ -6,25 +6,40 @@
 
 import config from './config'
 
-const OLLAMA_URL = config.ollamaUrl
+// Store the working URL (default to config value or 127.0.0.1)
+let WORKING_URL = config.ollamaUrl
 
 /**
  * Check if Ollama is reachable
+ * Tries both localhost and 127.0.0.1 if current one fails
  */
 export async function checkOllamaConnection() {
-  try {
-    const res = await fetch(OLLAMA_URL, { method: 'GET' })
-    return res.ok
-  } catch {
-    return false
+  const targets = [WORKING_URL, 'http://127.0.0.1:11434', 'http://localhost:11434']
+
+  for (const url of targets) {
+    try {
+      const res = await fetch(url, { method: 'GET' })
+      if (res.ok) {
+        WORKING_URL = url // Update working URL
+        return true
+      }
+    } catch (err) {
+      // Continue to next target
+    }
   }
+  return false
+}
+
+export function getWorkingUrl() {
+  return WORKING_URL
 }
 
 /**
  * List available models from Ollama
  */
 export async function getModels() {
-  const res = await fetch(`${OLLAMA_URL}/api/tags`)
+  const url = WORKING_URL
+  const res = await fetch(`${url}/api/tags`)
   if (!res.ok) throw new Error('Failed to fetch models')
   const data = await res.json()
   return data.models || []
@@ -32,19 +47,11 @@ export async function getModels() {
 
 /**
  * Stream a chat response from Ollama
- * @param {Object} params - Chat parameters
- * @param {string} params.model - Model name
- * @param {Array} params.messages - Message history [{role, content, images?}]
- * @param {number} params.temperature - Temperature
- * @param {number} params.num_ctx - Context window size
- * @param {function} onToken - Callback for each token
- * @param {function} onDone - Callback when done
- * @param {function} onError - Callback on error
- * @param {AbortSignal} signal - AbortController signal to cancel streaming
  */
 export async function streamChat({ model, messages, temperature, num_ctx }, onToken, onDone, onError, signal) {
+  const url = WORKING_URL
   try {
-    const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+    const res = await fetch(`${url}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -74,10 +81,8 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
       if (done) break
 
       buffer += decoder.decode(value, { stream: true })
-
-      // Process complete JSON lines
       const lines = buffer.split('\n')
-      buffer = lines.pop() // Keep incomplete line in buffer
+      buffer = lines.pop()
 
       for (const line of lines) {
         if (!line.trim()) continue
@@ -91,21 +96,18 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
             return
           }
         } catch (e) {
-          // Skip malformed JSON lines
+          // Skip
         }
       }
     }
 
-    // Process any remaining buffer
     if (buffer.trim()) {
       try {
         const json = JSON.parse(buffer)
         if (json.message?.content) {
           onToken(json.message.content)
         }
-      } catch (e) {
-        // Skip
-      }
+      } catch (e) { /* Skip */ }
     }
 
     onDone?.()
@@ -119,13 +121,12 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
 }
 
 /**
- * Convert a File to base64 string (for image uploads)
+ * Convert a File to base64 string
  */
 export function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
-      // Remove the data:image/...;base64, prefix
       const base64 = reader.result.split(',')[1]
       resolve(base64)
     }

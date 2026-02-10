@@ -132,10 +132,8 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
                 alt={config.appTitle}
                 className="w-full h-full object-cover"
               />
-              {/* Golden overlay shimmer */}
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-red-500/5 pointer-events-none" />
             </div>
-            {/* Orbiting particles */}
             <div className="absolute inset-0 animate-spin-slow">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-amber-500/70 shadow-lg shadow-amber-500/30" />
             </div>
@@ -153,7 +151,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             {config.appSubtitle}
           </p>
 
-          {/* Feature cards */}
           <div className="grid grid-cols-3 gap-3 mb-10">
             <div className="glass-card p-4 rounded-xl hover:-translate-y-1 cursor-default transition-all duration-300">
               <Zap className="h-6 w-6 text-amber-500 mx-auto mb-2" />
@@ -170,33 +167,45 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
           </div>
 
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button
-              onClick={handleNewChat}
-              className="gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-7 py-5 text-base font-semibold shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 hover:-translate-y-0.5 text-white border-0"
-            >
+            <Button onClick={handleNewChat} className="gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-7 py-5 text-base font-semibold shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 hover:-translate-y-0.5 text-white border-0">
               <Plus className="h-5 w-5" />
               New Chat
             </Button>
-            <Button
-              onClick={onToggleSidebar}
-              variant="outline"
-              className="gap-2 px-7 py-5 text-base font-semibold hover:-translate-y-0.5 transition-all duration-300 glass"
-            >
+            <Button onClick={onToggleSidebar} variant="outline" className="gap-2 px-7 py-5 text-base font-semibold hover:-translate-y-0.5 transition-all duration-300 glass">
               <Menu className="h-5 w-5" />
               History
             </Button>
           </div>
 
-          {/* Connection status */}
+          {/* Connection status & Troubleshooting */}
           {!isConnected && (
-            <div className="mt-8 glass-card rounded-xl p-4 animate-fadeIn">
-              <div className="flex items-center justify-center gap-2 text-sm text-red-500 mb-2">
-                <AlertCircle className="h-4 w-4" />
-                <span className="font-medium">Ollama not detected</span>
+            <div className="mt-8 glass-card rounded-2xl p-6 animate-fadeIn max-w-md mx-auto text-left border-red-500/20 shadow-2xl shadow-red-500/5">
+              <div className="flex items-center gap-2 text-red-500 mb-4">
+                <AlertCircle className="h-5 w-5" />
+                <span className="font-bold text-lg">Ollama Not Detected</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Make sure Ollama is running on <code className="text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">localhost:11434</code>
-              </p>
+
+              <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
+                <p>This app runs entirely in your browser and needs a direct connection to Ollama on your machine.</p>
+
+                <div className="space-y-2">
+                  <p className="font-bold text-foreground text-xs uppercase tracking-widest">Step 1: Enable CORS (Required for Vercel)</p>
+                  <p>Open Terminal/PowerShell and run this exact command to allow the connection:</p>
+                  <div className="bg-black/40 p-3 rounded-lg border border-white/10 font-mono text-[11px] break-all select-all text-red-400">
+                    $env:OLLAMA_ORIGINS="*"; ollama serve
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-bold text-foreground text-xs uppercase tracking-widest">Step 2: Fix HTTPS Blocking</p>
+                  <p>If you are on <b>Vercel (HTTPS)</b>, your browser blocks <b>localhost (HTTP)</b> by default.</p>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Click the <b>Site Settings (sliders icon)</b> in your URL bar.</li>
+                    <li>Find <b>"Insecure Content"</b> and set it to <b>"Allow"</b>.</li>
+                    <li>Refresh the page.</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
           {isConnected && (
@@ -213,7 +222,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   // ========== Chat View ==========
   return (
     <div className="flex-1 flex flex-col h-full pt-16">
-      {/* Chat header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 glass">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="h-10 w-10 hover:bg-muted/50">
@@ -241,7 +249,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         </div>
       </div>
 
-      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {displayMessages.length === 0 && !showTyping && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground animate-fadeIn">
@@ -259,7 +266,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-border/30 glass">
         <ChatInput onSend={handleSend} onStop={handleStopGeneration} disabled={!isConnected} isLoading={isLoading} />
       </div>
