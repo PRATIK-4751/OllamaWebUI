@@ -1,45 +1,28 @@
 // ===================================
 // Ollama Direct API Client
 // ===================================
-// Talks directly to user's local Ollama instance.
-// No backend server needed!
 
 import config from './config'
 
-// Store the working URL (default to config value or 127.0.0.1)
-let WORKING_URL = config.ollamaUrl
+const OLLAMA_URL = 'http://127.0.0.1:11434'
 
 /**
  * Check if Ollama is reachable
- * Tries both localhost and 127.0.0.1 if current one fails
  */
 export async function checkOllamaConnection() {
-  const targets = [WORKING_URL, 'http://127.0.0.1:11434', 'http://localhost:11434']
-
-  for (const url of targets) {
-    try {
-      const res = await fetch(url, { method: 'GET' })
-      if (res.ok) {
-        WORKING_URL = url // Update working URL
-        return true
-      }
-    } catch (err) {
-      // Continue to next target
-    }
+  try {
+    const res = await fetch(OLLAMA_URL, { method: 'GET' })
+    return res.ok
+  } catch {
+    return false
   }
-  return false
-}
-
-export function getWorkingUrl() {
-  return WORKING_URL
 }
 
 /**
  * List available models from Ollama
  */
 export async function getModels() {
-  const url = WORKING_URL
-  const res = await fetch(`${url}/api/tags`)
+  const res = await fetch(`${OLLAMA_URL}/api/tags`)
   if (!res.ok) throw new Error('Failed to fetch models')
   const data = await res.json()
   return data.models || []
@@ -49,9 +32,8 @@ export async function getModels() {
  * Stream a chat response from Ollama
  */
 export async function streamChat({ model, messages, temperature, num_ctx }, onToken, onDone, onError, signal) {
-  const url = WORKING_URL
   try {
-    const res = await fetch(`${url}/api/chat`, {
+    const res = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -95,9 +77,7 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
             onDone?.()
             return
           }
-        } catch (e) {
-          // Skip
-        }
+        } catch (e) { /* Skip */ }
       }
     }
 
