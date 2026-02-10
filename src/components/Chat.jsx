@@ -83,7 +83,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       () => { setIsLoading(false); persistMessages() },
       (error) => {
         console.error('Chat error:', error)
-        updateLastMessage(`\n\n[ERROR]: ${error}`)
+        updateLastMessage(`\n\n⚠️ Error: ${error}`)
         setIsLoading(false)
         persistMessages()
       },
@@ -202,7 +202,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             {/* Very discrete help tooltip for Vercel users */}
             {!isConnected && (
               <div className="mt-4 text-[10px] text-muted-foreground/40 max-w-xs mx-auto leading-relaxed animate-fadeIn opacity-0 group-hover:opacity-100 transition-opacity">
-                Note: Online browsers may block local AI. Click site settings icon - "Allow Insecure Content" & Refresh.
+                Note: Online browsers may block local AI. Click site settings icon → "Allow Insecure Content" & Refresh.
               </div>
             )}
           </div>
