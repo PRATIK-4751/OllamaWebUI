@@ -1,77 +1,49 @@
-# 🖼️ Ollama WebUI — Renaissance Edition
+# Ollama WebUI - Renaissance Edition
 
-A premium, high-aesthetic web interface for your local Ollama models. Designed with a **Renaissance & Baroque** aesthetic, featuring glassmorphism, classical art backgrounds, and a zero-latency direct connection to your local AI.
+A clean, high-aesthetic web interface for your local Ollama models. This application features a zero-latency direct connection to your local AI with a focus on premium typography and design.
 
-![Ollama WebUI Demo](public/assets/demo.png)
+## How it Works
 
----
+This application is a frontend-only client that communicates directly with your local Ollama instance using the Fetch API.
 
-## 🏛️ How it Works
+- **Direct Connection**: No backend server is required.
+- **Privacy**: All chat history is stored locally in your browser's localStorage.
+- **Multimodal Support**: Supports any vision-capable model (like llava, moondream, or bakllava).
 
-This application is a **frontend-only** client. It speaks directly to your local Ollama instance using the `fetch` API. 
+## Run with Docker
 
-- **Detection**: The app automatically checks if Ollama is running on `http://localhost:11434` every 10 seconds.
-- **Privacy**: All your chats are stored in your browser's `localStorage`. No data ever leaves your machine (except to talk to Ollama).
-- **Zero Latency**: No backend server means one less layer between you and the model.
+You can run the pre-built image directly from Docker Hub:
 
----
+```bash
+docker run -p 3000:80 lucifero19/ollama-webui:latest
+```
 
-## 🐳 Run with Docker (Recommended)
+Once running, access the UI at http://localhost:3000.
 
-The easiest way to run the WebUI locally is using Docker.
+## Requirements
 
-1. **Clone & Build:**
-   ```bash
-   docker-compose up --build -d
-   ```
-2. **Access:**
-   Open `http://localhost:3000` in your browser.
+You must have Ollama installed and running with CORS enabled.
 
----
+### Enable CORS (Required)
 
-## 🚀 Local Installation (Manual)
+Browsers block direct connections by default. You must set the OLLAMA_ORIGINS environment variable:
 
-If you prefer to run it manually:
-1. **Install Dependencies:** `npm install`
-2. **Launch Dev Server:** `npm run dev`
-3. **Access:** `http://localhost:3000`
+- **Windows (PowerShell)**:
+  ```powershell
+  $env:OLLAMA_ORIGINS="*"; ollama serve
+  ```
+- **Mac/Linux**:
+  ```bash
+  OLLAMA_ORIGINS="*" ollama serve
+  ```
 
----
+## Local Development
 
-## ⚙️ Requirement: Ollama with CORS
-This UI **will not work** without Ollama installed and CORS enabled.
+If you prefer to run from source:
 
-1. **Download Ollama**: [ollama.com](https://ollama.com)
-2. **Launch with CORS**:
-   - **Windows (PowerShell)**: `$env:OLLAMA_ORIGINS="*"; ollama serve`
-   - **Mac/Linux**: `OLLAMA_ORIGINS="*" ollama serve`
+1. Install dependencies: `npm install`
+2. Start development server: `npm run dev`
+3. Access at: http://localhost:3000
 
----
-
----
-
-## ⚖️ vs. LM Studio
-
-| Feature | Renaissance WebUI | LM Studio |
-| :--- | :--- | :--- |
-| **Fonts** | 🖋️ **Playfair Display** & **Outfit** | 🔠 Standard UI Fonts |
-| **Aesthetics** | ✨ Historical Art & Glassmorphism | 🔧 Technical / Flat |
-| **Customization** | 🎨 Full CSS/Theme control via `.env` | 🔒 Limited / Fixed |
-| **Architecture** | 🍃 Zero-install Web (Ultra-light) | 🐘 Heavy Desktop Native App |
-| **Inspiration** | 🏛️ Creative and Scholarly vibe | 🛠️ Engineering and Testing vibe |
-
-**Verdict**: While LM Studio is great for model management, our WebUI provides a **cool, customizable atmosphere** that makes chatting with AI feel like an inspired session in a classical library.
-
----
-
-## 🖋️ Design & Typography
-
-We use a curated pairing of fonts for maximum "cool" factor:
-- **Playfair Display**: A sophisticated serif for that "historical manuscript" feeling in titles.
-- **Outfit**: A modern, geometric sans-serif for crystal-clear chat readability.
-- **JetBrains Mono**: For razor-sharp code blocks.
-
----
-
-## 📜 License
-MIT. Clone it, skin it, make it yours.
+## License
+MIT
