@@ -6,7 +6,8 @@
 
 const config = {
     // Ollama (direct connection — no backend needed!)
-    ollamaUrl: import.meta.env.VITE_OLLAMA_URL || 'http://localhost:11434',
+    // We use 127.0.0.1 instead of localhost for better compatibility in browsers
+    ollamaUrl: import.meta.env.VITE_OLLAMA_URL || 'http://127.0.0.1:11434',
 
     // Model
     defaultModel: import.meta.env.VITE_DEFAULT_MODEL || 'llava:7b',

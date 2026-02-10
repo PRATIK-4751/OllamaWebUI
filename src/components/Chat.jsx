@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useChatStore } from '../store/chatStore'
-import { streamChat, checkOllamaConnection } from '../api'
+import { streamChat, checkOllamaConnection, getWorkingUrl } from '../api'
 import config from '../config'
 import Message from './Message'
 import ChatInput from './ChatInput'
 import TypingIndicator from './TypingIndicator'
 import { Button } from './ui/button'
-import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle } from 'lucide-react'
+import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle, Info } from 'lucide-react'
 
 export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const {
@@ -28,13 +28,14 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const messagesEndRef = useRef(null)
   const abortRef = useRef(null)
 
+  // Check Ollama connection on mount and periodically
   useEffect(() => {
     const check = async () => {
       const ok = await checkOllamaConnection()
       setIsConnected(ok)
     }
     check()
-    const interval = setInterval(check, 10000)
+    const interval = setInterval(check, 8000)
     return () => clearInterval(interval)
   }, [setIsConnected])
 
@@ -48,14 +49,17 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
 
   const handleSend = async (content, images) => {
     if (!currentChat || !isConnected) return
+
     setIsLoading(true)
 
     const userMsg = { role: 'user', content }
-    if (images && images.length > 0) userMsg.images = images
-
+    if (images && images.length > 0) {
+      userMsg.images = images
+    }
     addMessage(userMsg)
     addMessage({ role: 'assistant', content: '' })
 
+    // Build message history with system prompt
     const history = [
       { role: 'system', content: config.systemPrompt || 'You are a helpful AI assistant.' },
       ...messages,
@@ -121,23 +125,23 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             <div className="relative w-36 h-36 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-105"
               style={{
                 border: '3px solid rgba(180,150,100,0.2)',
-                boxShadow: '0 20px 60px -15px rgba(0,0,0,0.3)',
-                background: 'rgba(0,0,0,0.2)'
+                boxShadow: '0 20px 60px -15px rgba(0,0,0,0.3), inset 0 0 30px rgba(180,150,100,0.05)'
               }}>
               <img
                 src={config.logoImage}
                 alt={config.appTitle}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-red-500/10 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-red-500/5 pointer-events-none" />
             </div>
+            {/* Orbiting particles */}
             <div className="absolute inset-0 animate-spin-slow">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-amber-500/60 shadow-lg shadow-amber-500/30" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-amber-500/70 shadow-lg shadow-amber-500/30" />
             </div>
           </div>
 
           <h2 className="text-5xl font-bold mb-3 tracking-tight">
-            <span className="bg-gradient-to-r from-amber-600 via-red-500 to-rose-500 dark:from-amber-400 dark:via-red-400 dark:to-rose-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-600 via-red-500 to-rose-500 bg-clip-text text-transparent">
               {config.appTitle}
             </span>
           </h2>
@@ -145,6 +149,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             {config.appSubtitle}
           </p>
 
+          {/* Feature cards */}
           <div className="grid grid-cols-3 gap-4 mb-10">
             <div className="glass-card p-5 rounded-2xl hover:-translate-y-1 transition-all duration-300">
               <Zap className="h-6 w-6 text-amber-500 mx-auto mb-2" />
@@ -161,28 +166,44 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
           </div>
 
           <div className="flex gap-4 justify-center flex-wrap">
-            <Button onClick={handleNewChat} className="h-14 gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-10 text-lg font-bold shadow-xl shadow-red-500/20 hover:shadow-red-500/40 transition-all duration-300 hover:-translate-y-1 text-white border-0 rounded-2xl">
+            <Button
+              onClick={handleNewChat}
+              className="h-14 gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-10 text-lg font-bold shadow-xl shadow-red-500/20 hover:shadow-red-500/40 transition-all duration-300 hover:-translate-y-1 text-white border-0 rounded-2xl"
+            >
               <Plus className="h-6 w-6" />
               Start Chatting
             </Button>
-            <Button onClick={onToggleSidebar} variant="outline" className="h-14 gap-2 px-10 text-lg font-bold hover:-translate-y-1 transition-all duration-300 glass rounded-2xl">
+            <Button
+              onClick={onToggleSidebar}
+              variant="outline"
+              className="h-14 gap-2 px-10 text-lg font-bold hover:-translate-y-1 transition-all duration-300 glass rounded-2xl"
+            >
               <Menu className="h-6 w-6" />
               History
             </Button>
           </div>
 
-          {/* Subtle Connection Indicator */}
-          <div className="mt-12 flex items-center justify-center gap-2 text-xs font-bold tracking-widest uppercase animate-fadeIn">
-            {isConnected ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse" />
-                <span className="text-emerald-500/80">Ollama Connected</span>
-              </>
-            ) : (
-              <>
-                <AlertCircle className="h-4 w-4 text-red-500/70" />
-                <span className="text-red-500/60 font-medium">Ollama Not Detected (127.0.0.1:11434)</span>
-              </>
+          {/* Professional Status Area */}
+          <div className="mt-12 group relative">
+            <div className="flex items-center justify-center gap-3 text-[11px] font-bold tracking-[0.2em] uppercase transition-all duration-500">
+              {isConnected ? (
+                <div className="flex items-center gap-2 text-emerald-500/80">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                  Local AI Ready
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-amber-500/60">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Connecting to {getWorkingUrl().replace('http://', '')}...
+                </div>
+              )}
+            </div>
+
+            {/* Very discrete help tooltip for Vercel users */}
+            {!isConnected && (
+              <div className="mt-4 text-[10px] text-muted-foreground/40 max-w-xs mx-auto leading-relaxed animate-fadeIn opacity-0 group-hover:opacity-100 transition-opacity">
+                Note: Online browsers may block local AI. Click site settings icon → "Allow Insecure Content" & Refresh.
+              </div>
             )}
           </div>
         </div>
@@ -193,26 +214,35 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   // ========== Chat View ==========
   return (
     <div className="flex-1 flex flex-col h-full pt-16">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/20 glass">
+      {/* Chat header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/10 glass">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="h-10 w-10 hover:bg-muted/50 rounded-xl">
             <Menu className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-lg font-bold text-foreground truncate max-w-[200px]">
+            <h2 className="text-lg font-bold text-foreground truncate max-w-[200px] sm:max-w-xs">
               {currentChat.title}
             </h2>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{selectedModel}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className={`flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full glass-subtle ${isConnected ? 'text-emerald-500' : 'text-red-500'}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-            {isConnected ? 'Connected' : 'Offline'}
-          </div>
+          {isConnected ? (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-emerald-500 glass-subtle px-3 py-1.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Connected
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-amber-500 glass-subtle px-3 py-1.5 rounded-full">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Detecting...
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {displayMessages.length === 0 && !showTyping && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground animate-fadeIn">
@@ -220,7 +250,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
               <MessageSquare className="h-10 w-10 opacity-20" />
             </div>
             <p className="text-xl font-bold mb-1">Begin the Dialogue</p>
-            <p className="text-sm opacity-50 font-medium">Your local AI is ready to assist</p>
+            <p className="text-sm opacity-50 font-medium tracking-wide">Your local AI is ready to assist</p>
           </div>
         )}
         {displayMessages.map((msg, idx) => (
@@ -230,7 +260,8 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-border/20 glass px-4 py-4 sm:px-6">
+      {/* Input */}
+      <div className="border-t border-border/10 glass px-4 py-4 sm:px-6">
         <ChatInput onSend={handleSend} onStop={handleStopGeneration} disabled={!isConnected} isLoading={isLoading} />
       </div>
     </div>

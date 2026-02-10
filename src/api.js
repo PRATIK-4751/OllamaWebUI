@@ -1,28 +1,59 @@
 // ===================================
 // Ollama Direct API Client
 // ===================================
+// Talks directly to user's local Ollama instance.
+// No backend server needed!
 
 import config from './config'
 
-const OLLAMA_URL = 'http://127.0.0.1:11434'
+// Store the working URL (default to config value or 127.0.0.1)
+let WORKING_URL = config.ollamaUrl
 
 /**
  * Check if Ollama is reachable
+ * Tries both localhost and 127.0.0.1 if current one fails
  */
 export async function checkOllamaConnection() {
-  try {
-    const res = await fetch(OLLAMA_URL, { method: 'GET' })
-    return res.ok
-  } catch {
-    return false
+  // Always try 127.0.0.1 first as it's more reliable for bypassing DNS blocks on Vercel
+  const targets = ['http://127.0.0.1:11434', 'http://localhost:11434', WORKING_URL]
+
+  // Create a Set to remove duplicates
+  const uniqueTargets = [...new Set(targets)]
+
+  for (const url of uniqueTargets) {
+    try {
+      // Use a shorter timeout for detection
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 2000)
+
+      const res = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (res.ok) {
+        WORKING_URL = url // Update working URL
+        return true
+      }
+    } catch (err) {
+      // Continue to next target
+    }
   }
+  return false
+}
+
+export function getWorkingUrl() {
+  return WORKING_URL
 }
 
 /**
  * List available models from Ollama
  */
 export async function getModels() {
-  const res = await fetch(`${OLLAMA_URL}/api/tags`)
+  const url = WORKING_URL
+  const res = await fetch(`${url}/api/tags`)
   if (!res.ok) throw new Error('Failed to fetch models')
   const data = await res.json()
   return data.models || []
@@ -32,8 +63,9 @@ export async function getModels() {
  * Stream a chat response from Ollama
  */
 export async function streamChat({ model, messages, temperature, num_ctx }, onToken, onDone, onError, signal) {
+  const url = WORKING_URL
   try {
-    const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+    const res = await fetch(`${url}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -77,7 +109,9 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
             onDone?.()
             return
           }
-        } catch (e) { /* Skip */ }
+        } catch (e) {
+          // Skip
+        }
       }
     }
 

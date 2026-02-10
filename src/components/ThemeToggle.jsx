@@ -18,13 +18,13 @@ export default function ThemeToggle() {
     }
 
     setIsDark(initialTheme === 'dark')
-    document.documentElement.classList.toggle('dark', initialTheme === 'dark')
+    document.documentElement.classList.toggle('light', initialTheme === 'light')
   }, [])
 
   const toggleTheme = () => {
     const newTheme = !isDark ? 'dark' : 'light'
     setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
+    document.documentElement.classList.toggle('light', !isDark === false) // if moving to light, add .light
     localStorage.setItem('theme', newTheme)
   }
 

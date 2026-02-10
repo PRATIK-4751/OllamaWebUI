@@ -8,32 +8,8 @@
 
 @layer base {
 
-  /* ---- Light Theme: Aged Antique Parchment ---- */
+  /* ---- Dark Theme: Obsidian Baroque (DEFAULT) ---- */
   :root {
-    --background: 35 30% 88%;
-    --foreground: 25 30% 12%;
-    --card: 35 35% 82%;
-    --card-foreground: 25 25% 15%;
-    --popover: 35 30% 90%;
-    --popover-foreground: 25 25% 15%;
-    --primary: 0 72% 51%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 30 20% 85%;
-    --secondary-foreground: 25 20% 15%;
-    --muted: 30 15% 82%;
-    --muted-foreground: 25 10% 40%;
-    --accent: 30 20% 85%;
-    --accent-foreground: 25 20% 15%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 30 20% 75%;
-    --input: 30 20% 75%;
-    --ring: 0 72% 51%;
-    --radius: 1rem;
-  }
-
-  /* ---- Dark Theme: Obsidian Baroque ---- */
-  .dark {
     --background: 20 20% 5%;
     --foreground: 35 25% 92%;
     --card: 22 15% 10%;
@@ -53,6 +29,30 @@
     --border: 20 15% 15%;
     --input: 20 15% 15%;
     --ring: 0 75% 55%;
+    --radius: 1rem;
+  }
+
+  /* ---- Light Theme: Aged Antique Parchment ---- */
+  .light {
+    --background: 35 30% 88%;
+    --foreground: 25 30% 12%;
+    --card: 35 35% 82%;
+    --card-foreground: 25 25% 15%;
+    --popover: 35 30% 90%;
+    --popover-foreground: 25 25% 15%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 20% 85%;
+    --secondary-foreground: 25 20% 15%;
+    --muted: 30 15% 82%;
+    --muted-foreground: 25 10% 40%;
+    --accent: 30 20% 85%;
+    --accent-foreground: 25 20% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 20% 75%;
+    --input: 30 20% 75%;
+    --ring: 0 72% 51%;
   }
 }
 
@@ -117,18 +117,18 @@
   pointer-events: none;
 }
 
-/* Light mode */
+/* Dark mode (default) */
 :root .bg-themed::before {
-  background-image: var(--bg-light);
-  opacity: 0.18;
-  filter: sepia(20%) contrast(90%);
-}
-
-/* Dark mode */
-.dark .bg-themed::before {
   background-image: var(--bg-dark);
   opacity: 0.22;
   filter: brightness(0.7) contrast(110%);
+}
+
+/* Light mode */
+.light .bg-themed::before {
+  background-image: var(--bg-light);
+  opacity: 0.18;
+  filter: sepia(20%) contrast(90%);
 }
 
 /* ===================================
@@ -171,16 +171,22 @@
   }
 }
 
-/* Dark theme overrides for even deeper contrast */
-.dark .glass {
+/* Dark theme (default) glass overrides */
+:root .glass {
   background: hsla(var(--card), 0.75);
   /* Darker and more opaque for AI bubbles */
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
   border-color: hsla(var(--border), 0.5);
 }
 
-.dark .glass-strong {
+:root .glass-strong {
   background: hsla(var(--card), 0.96);
+}
+
+.light .glass {
+  background: hsla(var(--card), 0.85);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+  border-color: hsla(var(--border), 0.3);
 }
 
 /* ================= =================
