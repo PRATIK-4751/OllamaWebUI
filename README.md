@@ -2,74 +2,52 @@
 
 A premium, high-aesthetic web interface for your local Ollama models. Designed with a **Renaissance & Baroque** aesthetic, featuring glassmorphism, classical art backgrounds, and a zero-latency direct connection to your local AI.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![React](https://img.shields.io/badge/React-18.x-61dafb.svg)
-![Tailwind](https://img.shields.io/badge/Tailwind-3.x-38bdf8.svg)
-![Ollama](https://img.shields.io/badge/Ollama-Local-ORANGE.svg)
+![Ollama WebUI Demo](public/assets/demo.png)
 
 ---
 
-## ✨ Features
+## 🏛️ How it Works
 
-- 🏛️ **Classical Aesthetics**: Switch between a "Warm Renaissance" light theme and a "Moody Baroque" dark theme.
-- ⚡ **Zero Backend**: Connects directly from your browser to Ollama (no middleman storage).
-- 💾 **Local Storage History**: Your chats stay in your browser, private and secure.
-- 🖼️ **Vision Support**: Upload images to LLaVA and other vision-capable models.
-- 📜 **System Prompts**: Configure a global personality for your AI.
-- 📤 **Import/Export**: Move your chat history between browsers as JSON files.
-- 💎 **Premium Code Blocks**: macOS-style code containers with syntax highlighting and copy-to-clipboard.
+This application is a **frontend-only** client. It speaks directly to your local Ollama instance using the `fetch` API. 
+
+- **Detection**: The app automatically checks if Ollama is running on `http://localhost:11434` every 10 seconds.
+- **Privacy**: All your chats are stored in your browser's `localStorage`. No data ever leaves your machine (except to talk to Ollama).
+- **Zero Latency**: No backend server means one less layer between you and the model.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Requirement: Ollama is Mandatory
 
-### 1. Install Ollama
-You **must** have Ollama installed on your machine for this WebUI to function.
-- **Download:** [ollama.com/download](https://ollama.com/download)
-- **Configure CORS:** By default, Ollama blocks browser requests. You need to enable them by setting an environment variable:
-  - **Windows (PowerShell):** `$env:OLLAMA_ORIGINS="*"; ollama serve`
-  - **Linux/Mac:** `OLLAMA_ORIGINS="*" ollama serve`
-
-### 2. Run the App
-```bash
-# Clone the repository
-git clone https://github.com/PRATIK-4751/OllamaWebUI.git
-
-# Install dependencies
-cd OllamaWebUI
-npm install
-
-# Start the dev server
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+This UI **will not work** without Ollama installed on your system.
+1. **Download Ollama**: [ollama.com](https://ollama.com)
+2. **Launch with CORS**: Browsers block direct connections by default. You must enable `OLLAMA_ORIGINS` to let the WebUI connect:
+   - **Windows (PowerShell)**: `$env:OLLAMA_ORIGINS="*"; ollama serve`
+   - **Mac/Linux**: `OLLAMA_ORIGINS="*" ollama serve`
 
 ---
 
-## 🎨 Customization (.env)
+## ⚖️ vs. LM Studio
 
-Everything is customizable! Copy `.env.example` to `.env` to change:
-
-- `VITE_APP_TITLE`: Change the app name.
-- `VITE_SYSTEM_PROMPT`: Set the AI's core personality.
-- `VITE_BG_DARK` / `VITE_BG_LIGHT`: Use your own images as background textures.
-- `VITE_AI_AVATAR`: Custom avatar for the assistant.
-
----
-
-## ⚖️ How it compares to LM Studio?
-
-| Feature | Ollama WebUI (This App) | LM Studio |
+| Feature | Renaissance WebUI | LM Studio |
 | :--- | :--- | :--- |
-| **Aesthetics** | ✨ High-end Classical Art / Glassmorphism | 🔧 Industrial / Technical |
-| **Footprint** | 🍃 Ultra-lightweight (Static Web App) | 🐘 Heavy Desktop Application |
-| **Customization** | 🎨 Full control over UI, CSS, and Themes | 🔒 Hardcoded UI settings |
-| **Access** | 🌍 Can be hosted on Vercel/GitHub Pages | 💻 Local Desktop only |
-| **Focus** | 💬 Pure Chat Experience | 🛠️ Model Management & Quantization |
+| **Fonts** | 🖋️ **Playfair Display** & **Outfit** | 🔠 Standard UI Fonts |
+| **Aesthetics** | ✨ Historical Art & Glassmorphism | 🔧 Technical / Flat |
+| **Customization** | 🎨 Full CSS/Theme control via `.env` | 🔒 Limited / Fixed |
+| **Architecture** | 🍃 Zero-install Web (Ultra-light) | 🐘 Heavy Desktop Native App |
+| **Inspiration** | 🏛️ Creative and Scholarly vibe | 🛠️ Engineering and Testing vibe |
 
-**Verdict:** If you want a **beautiful, customizable, and fast** chat experience that feels premium while using your local Ollama power—this is for you.
+**Verdict**: While LM Studio is great for model management, our WebUI provides a **cool, customizable atmosphere** that makes chatting with AI feel like an inspired session in a classical library.
+
+---
+
+## 🖋️ Design & Typography
+
+We use a curated pairing of fonts for maximum "cool" factor:
+- **Playfair Display**: A sophisticated serif for that "historical manuscript" feeling in titles.
+- **Outfit**: A modern, geometric sans-serif for crystal-clear chat readability.
+- **JetBrains Mono**: For razor-sharp code blocks.
 
 ---
 
 ## 📜 License
-MIT License. Feel free to clone, modify, and share!
+MIT. Clone it, skin it, make it yours.
