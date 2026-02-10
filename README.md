@@ -1,5 +1,7 @@
 # Ollama WebUI - Renaissance Edition
 
+![Ollama WebUI Demo](public/assets/demo.png)
+
 A clean, high-aesthetic web interface for your local Ollama models. This application features a zero-latency direct connection to your local AI with a focus on premium typography and design.
 
 ## How it Works
