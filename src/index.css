@@ -1,0 +1,274 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================
+   Renaissance / Classical Art Theme 2.0
+   =================================== */
+
+@layer base {
+
+  /* ---- Light Theme: Aged Antique Parchment ---- */
+  :root {
+    --background: 35 30% 88%;
+    --foreground: 25 30% 12%;
+    --card: 35 35% 82%;
+    --card-foreground: 25 25% 15%;
+    --popover: 35 30% 90%;
+    --popover-foreground: 25 25% 15%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 20% 85%;
+    --secondary-foreground: 25 20% 15%;
+    --muted: 30 15% 82%;
+    --muted-foreground: 25 10% 40%;
+    --accent: 30 20% 85%;
+    --accent-foreground: 25 20% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 20% 75%;
+    --input: 30 20% 75%;
+    --ring: 0 72% 51%;
+    --radius: 1rem;
+  }
+
+  /* ---- Dark Theme: Obsidian Baroque ---- */
+  .dark {
+    --background: 20 20% 5%;
+    --foreground: 35 25% 92%;
+    --card: 22 15% 10%;
+    --card-foreground: 35 25% 92%;
+    --popover: 22 15% 10%;
+    --popover-foreground: 35 25% 92%;
+    --primary: 0 75% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 12% 14%;
+    --secondary-foreground: 35 25% 92%;
+    --muted: 22 10% 12%;
+    --muted-foreground: 30 15% 50%;
+    --accent: 22 10% 15%;
+    --accent-foreground: 35 25% 92%;
+    --destructive: 0 62% 35%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 20 15% 15%;
+    --input: 20 15% 15%;
+    --ring: 0 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Outfit', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Playfair Display', serif;
+  }
+
+  code,
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* ===================================
+   Background Image Layer
+   =================================== */
+.bg-themed {
+  position: relative;
+  background-color: hsl(var(--background));
+}
+
+.bg-themed::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+/* Vignette overlay to make text pop */
+.bg-themed::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at center, transparent 20%, hsla(var(--background), 0.4) 100%);
+  pointer-events: none;
+}
+
+/* Light mode */
+:root .bg-themed::before {
+  background-image: var(--bg-light);
+  opacity: 0.18;
+  filter: sepia(20%) contrast(90%);
+}
+
+/* Dark mode */
+.dark .bg-themed::before {
+  background-image: var(--bg-dark);
+  opacity: 0.22;
+  filter: brightness(0.7) contrast(110%);
+}
+
+/* ===================================
+   Glassmorphism Utilities (Revised for better contrast)
+   =================================== */
+@layer utilities {
+  .glass {
+    background: hsla(var(--card), 0.85);
+    /* Increased opacity from 0.6 to 0.85 */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsla(var(--border), 0.3);
+    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .glass-strong {
+    background: hsla(var(--card), 0.95);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid hsla(var(--border), 0.4);
+  }
+
+  .glass-subtle {
+    background: hsla(var(--card), 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .glass-card {
+    background: hsla(var(--card), 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsla(var(--border), 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    background: hsla(var(--card), 0.9);
+    border-color: hsla(var(--primary), 0.3);
+    transform: translateY(-4px);
+  }
+}
+
+/* Dark theme overrides for even deeper contrast */
+.dark .glass {
+  background: hsla(var(--card), 0.75);
+  /* Darker and more opaque for AI bubbles */
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  border-color: hsla(var(--border), 0.5);
+}
+
+.dark .glass-strong {
+  background: hsla(var(--card), 0.96);
+}
+
+/* ================= =================
+   Animations
+   =================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes typingBounce {
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+
+  40% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideRight {
+  animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ===================================
+   Custom UI Elements
+   =================================== */
+.renaissance-border {
+  border: 1px solid transparent;
+  background: linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(to right, #b49664, #785a28) border-box;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(var(--muted-foreground), 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsla(var(--muted-foreground), 0.4);
+}
