@@ -29,18 +29,17 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 - **Prompt Templates** — Pre-defined high-quality prompts to get you started.
 - **100% Private** — Runs entirely on your local machine.
 
-## 🚀 Quick Start (Docker)
+## 🚀 Run & Update (One Command)
 
-Run everything with a single command:
+To always run the latest version with current features:
 
 ```bash
-docker-compose up -d
+docker-compose pull && docker-compose up -d
 ```
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend**: [http://localhost:8000](http://localhost:8000)
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-> Pre-built image: `docker pull lucifero19/ollama-webui:latest`
+> This single command pulls the latest supercharged images from Docker Hub and starts the app.
 
 ## ⚙️ Requirements
 
