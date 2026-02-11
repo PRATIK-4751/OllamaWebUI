@@ -18,7 +18,7 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 ### Chat Interface
 ![Chat Section](public/assets/textinterface.png)
 
-## ✨ Features
+## Features
 
 - **Chat with any Ollama model** — Full support for text, vision, and multimodal models.
 - **Web Search** — Real-time search powered by DuckDuckGo (toggleable).
@@ -29,7 +29,7 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 - **Prompt Templates** — Pre-defined high-quality prompts to get you started.
 - **100% Private** — Runs entirely on your local machine.
 
-## 🚀 Run & Update (One Command)
+##  Run & Update (One Command)
 
 To always run the latest version with current features:
 
@@ -41,7 +41,7 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 > This single command pulls the latest supercharged images from Docker Hub and starts the app.
 
-## ⚙️ Requirements
+##  Requirements
 
 **Ollama** must be running with CORS enabled:
 
@@ -53,7 +53,7 @@ $env:OLLAMA_ORIGINS="*"; ollama serve
 OLLAMA_ORIGINS="*" ollama serve
 ```
 
-## 🛠️ Local Development
+##  Local Development
 
 ```bash
 # Install & Run Frontend
@@ -65,6 +65,6 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-## ⚖️ License
+##  License
 
 MIT
