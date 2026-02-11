@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, FilePlus2, Square, Globe, Mic, MicOff, Link } from 'lucide-react'
+import { Send, X, FilePlus2, Square, Globe, Mic, MicOff, Link, FileBarChart } from 'lucide-react'
 import { fileToBase64, parsePdf, fetchUrlContent } from '../api'
 import { useChatStore } from '../store/chatStore'
 import { useVoice } from '../hooks/useVoice'
 import config from '../config'
 import DocumentContext from './DocumentContext'
 
-export default function ChatInput({ onSend, onStop, disabled = false, isLoading = false }) {
+export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false, isLoading = false }) {
   const [input, setInput] = useState('')
   const [images, setImages] = useState([])
   const [isUploading, setIsUploading] = useState(false)
@@ -67,6 +67,15 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
         } else if (file.type.startsWith('image/')) {
           const base64 = await fileToBase64(file)
           setImages(prev => [...prev, base64])
+        } else if (file.name.endsWith('.csv')) {
+          // Read CSV text for LLM context
+          const text = await new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.onload = (e) => resolve(e.target.result)
+            reader.readAsText(file)
+          })
+          // Add to context (truncated)
+          addDocument({ name: file.name, content: text.slice(0, 10000), fileObject: file })
         }
       } catch (error) {
         console.error('Failed to process file:', error)
@@ -148,13 +157,17 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
         : 'border-border/30'
         } ${isDisabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
+<<<<<<< HEAD
+=======
+          {/* Attach button (images + PDFs + CSVs) */}
+>>>>>>> 28c663c (Update application with latest changes to backend and frontend)
           {(config.enableImageUpload || config.enablePdfUpload) && (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading || isDisabled || isLoading}
               className="flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Attach files (images, PDFs)"
+              title="Attach files (images, PDFs, CSVs)"
             >
               {isUploading ? (
                 <div className="w-5 h-5 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
@@ -168,7 +181,7 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
             type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
-            accept={`${config.enableImageUpload ? 'image/*,' : ''}${config.enablePdfUpload ? 'application/pdf,.pdf' : ''}`}
+            accept={`${config.enableImageUpload ? 'image/*,' : ''}${config.enablePdfUpload ? 'application/pdf,' : ''}.csv`}
             multiple
             className="hidden"
           />
@@ -197,6 +210,8 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
               <Link className="h-5 w-5" />
             </button>
           )}
+
+
 
 
 

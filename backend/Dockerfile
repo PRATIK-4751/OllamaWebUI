@@ -1,11 +1,19 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
-RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
+# Install system dependencies for Playwright
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libxml2-dev \
+    libxslt-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright browsers (Chromium only)
+RUN playwright install --with-deps chromium
 
 COPY main.py .
 

@@ -171,3 +171,27 @@ export async function parsePdf(file) {
     throw err
   }
 }
+
+
+/**
+ * Analyze CSV file via FastAPI backend
+ */
+export async function analyzeCsv(file) {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch(`${config.backendUrl}/api/data/analyze`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) throw new Error(`Data analysis failed: ${res.status}`)
+    return await res.json()
+  } catch (err) {
+    console.error('Data analysis error:', err)
+    throw err
+  }
+}
+
+

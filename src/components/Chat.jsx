@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useChatStore } from '../store/chatStore'
-import { streamChat, checkOllamaConnection, getWorkingUrl, searchWeb, searchImages } from '../api'
+import { streamChat, checkOllamaConnection, getWorkingUrl, searchWeb, searchImages, analyzeCsv } from '../api'
 import config from '../config'
 import Message from './Message'
 import ChatInput from './ChatInput'
 import TypingIndicator from './TypingIndicator'
 import SearchResults from './SearchResults'
 import ImageResults from './ImageResults'
+import AnalysisResults from './AnalysisResults'
 import PromptTemplates from './PromptTemplates'
 import FileBrowser from './FileBrowser'
 import { Button } from './ui/button'
@@ -39,6 +40,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const [imageResults, setImageResults] = useState(null)
   const [imageQuery, setImageQuery] = useState('')
   const [fileBrowserOpen, setFileBrowserOpen] = useState(false)
+  const [analysisData, setAnalysisData] = useState(null)
 
   useEffect(() => {
     const check = async () => {
@@ -64,7 +66,10 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     setIsLoading(true)
     setSearchResults(null)
     setImageResults(null)
+    setSearchResults(null)
+    setImageResults(null)
     setImageQuery('')
+    setAnalysisData(null)
 
     const userMsg = { role: 'user', content }
     if (images && images.length > 0) {
@@ -114,10 +119,18 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     const dateContext = `\nCurrent date and time: ${dateStr}, ${timeStr}.`
     const systemContent = (config.systemPrompt || 'You are a helpful AI assistant.') + dateContext + docContext + searchContext
 
+    // Inject document context directly into the user prompt for immediate attention
+    // (This is often more effective than system prompt for "Talk to Data" scenarios)
+    let finalUserContent = userMsg.content
+    if (documents.length > 0) {
+      const relevantDocs = documents.map(d => `--- FILE: ${d.name} ---\n${d.content.slice(0, 8000)}`).join('\n\n')
+      finalUserContent = `${relevantDocs}\n\nQuestion: ${userMsg.content}`
+    }
+
     const history = [
       { role: 'system', content: systemContent },
       ...messages,
-      userMsg
+      { ...userMsg, content: finalUserContent } // Use modified content for the API call
     ].map(m => ({
       role: m.role,
       content: m.content,
@@ -125,6 +138,17 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     }))
 
     abortRef.current = new AbortController()
+
+    // Check for "Analyze" intent in user prompt
+    const analysisKeywords = ['plot', 'graph', 'chart', 'analyze', 'visualization', 'heatmap', 'histogram', 'trend', 'visualise']
+    const hasAnalysisKeyword = analysisKeywords.some(kw => content.toLowerCase().includes(kw))
+
+    // Find attached CSV file from documents (we stored fileObject in ChatInput)
+    const csvDoc = documents.find(d => d.name.endsWith('.csv') && d.fileObject)
+
+    if (hasAnalysisKeyword && csvDoc) {
+      handleAnalyze(csvDoc.fileObject)
+    }
 
     await streamChat(
       {
@@ -168,6 +192,19 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const handleFileAdd = (doc) => {
     addDocument(doc)
     setFileBrowserOpen(false)
+  }
+
+  const handleAnalyze = async (file) => {
+    try {
+      setIsLoading(true)
+      const data = await analyzeCsv(file)
+      setAnalysisData(data)
+      setIsLoading(false)
+    } catch (e) {
+      console.error('Analysis failed:', e)
+      setIsLoading(false)
+      updateLastMessage(`Error analyzing data: ${e.message}`)
+    }
   }
 
   const showTyping = isLoading && messages.length > 0 &&
@@ -327,6 +364,10 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         {displayMessages.map((msg, idx) => (
           <React.Fragment key={idx}>
             <Message role={msg.role} content={msg.content} images={msg.images} />
+            {/* Show analysis results at the bottom */}
+            {idx === displayMessages.length - 1 && analysisData && (
+              <AnalysisResults data={analysisData} onClose={() => setAnalysisData(null)} />
+            )}
             {/* Show search results + images after the last assistant message that used search */}
             {msg.role === 'assistant' && idx === displayMessages.length - 1 && (
               <>
@@ -352,6 +393,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         <ChatInput
           onSend={handleSend}
           onStop={handleStopGeneration}
+          onAnalyze={handleAnalyze}
           disabled={!isConnected}
           isLoading={isLoading}
           onOpenFileBrowser={() => setFileBrowserOpen(true)}

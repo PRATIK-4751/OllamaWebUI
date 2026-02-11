@@ -21,7 +21,7 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 ## Features
 
 - **Chat with any Ollama model** — Full support for text, vision, and multimodal models.
-- **Web Search** — Real-time search powered by DuckDuckGo (toggleable).
+- **Web Search** — Real-time search powered by DuckDuckGo and **Crawl4AI** (Playwright).
 - **Image Search** — Visual results directly in your chat flow.
 - **PDF Intelligence** — Upload PDFs and perform instant Q&A (server-side parsing).
 - **URL Fetching** — Extract content from any website for AI context.
@@ -62,6 +62,8 @@ npm run dev
 
 # Install & Run Backend (in /backend)
 pip install -r requirements.txt
+pip install -r requirements.txt
+playwright install --with-deps chromium
 uvicorn main:app --reload --port 8000
 ```
 
