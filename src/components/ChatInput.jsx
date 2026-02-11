@@ -158,9 +158,15 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         } ${isDisabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
           {/* Attach button (images + PDFs + CSVs) */}
 >>>>>>> 28c663c (Update application with latest changes to backend and frontend)
+=======
+
+          {/* Attach button (images + PDFs + CSVs) */}
+
+>>>>>>> 3e47dda (Professional cleanup and final README improvements)
           {(config.enableImageUpload || config.enablePdfUpload) && (
             <button
               type="button"
