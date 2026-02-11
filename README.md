@@ -1,61 +1,71 @@
-# Ollama WebUI — Renaissance Edition
+<table>
+  <tr>
+    <td><img src="public/assets/ai-avatar.jpg" width="80" style="border-radius: 20px;"></td>
+    <td><h1>Ollama WebUI — Renaissance Edition</h1></td>
+  </tr>
+</table>
 
-A beautiful, feature-rich web interface for your local Ollama models.
+A beautiful, high-aesthetic web interface for your local Ollama models. Fast, private, and supercharged with advanced features.
 
-## Features
+## 🖼️ Gallery
 
-- **Chat with any Ollama model** — text, vision, multimodal
-- **Web Search** — real-time search via DuckDuckGo (toggle ON/OFF)
-- **Image Search** — visual results alongside text answers
-- **PDF Upload & Q&A** — upload PDFs and ask questions about them
-- **URL Fetching** — pull content from any URL into context
-- **Voice Input & TTS** — speak your prompts, listen to responses
-- **Prompt Templates** — quick-start prompts for common tasks
-- **100% Local & Private** — your data never leaves your machine
+### Home Page
+![Home Page](public/assets/home.png)
 
-## Run with Docker (One Command)
+### Vision Capabilities
+![Vision](public/assets/vision.png)
+
+### Chat Interface
+![Chat Section](public/assets/textinterface.png)
+
+## ✨ Features
+
+- **Chat with any Ollama model** — Full support for text, vision, and multimodal models.
+- **Web Search** — Real-time search powered by DuckDuckGo (toggleable).
+- **Image Search** — Visual results directly in your chat flow.
+- **PDF Intelligence** — Upload PDFs and perform instant Q&A (server-side parsing).
+- **URL Fetching** — Extract content from any website for AI context.
+- **Voice & TTS** — Speech-to-text input and "Read Aloud" voice responses.
+- **Prompt Templates** — Pre-defined high-quality prompts to get you started.
+- **100% Private** — Runs entirely on your local machine.
+
+## 🚀 Quick Start (Docker)
+
+Run everything with a single command:
 
 ```bash
 docker-compose up -d
 ```
 
-This starts both the **frontend** (port 3000) and **backend** (port 8000).
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend**: [http://localhost:8000](http://localhost:8000)
 
-Open **http://localhost:3000** in your browser.
+> Pre-built image: `docker pull lucifero19/ollama-webui:latest`
 
-> You can also pull the pre-built image:
-> ```bash
-> docker pull lucifero19/ollama-webui:latest
-> ```
+## ⚙️ Requirements
 
-## Requirements
-
-**Ollama** must be installed and running with CORS enabled:
+**Ollama** must be running with CORS enabled:
 
 ```powershell
-# Windows PowerShell
+# Windows
 $env:OLLAMA_ORIGINS="*"; ollama serve
-```
 
-```bash
 # Mac / Linux
 OLLAMA_ORIGINS="*" ollama serve
 ```
 
-## Local Development
+## 🛠️ Local Development
 
 ```bash
-# Frontend
+# Install & Run Frontend
 npm install
-npm run dev          # → http://localhost:5173
+npm run dev
 
-# Backend (in /backend)
+# Install & Run Backend (in /backend)
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Set `VITE_BACKEND_URL=http://127.0.0.1:8000` in `.env` for local dev.
-
-## License
+## ⚖️ License
 
 MIT
