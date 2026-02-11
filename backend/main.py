@@ -77,7 +77,6 @@ async def web_search(q: str, max_results: int = 5):
                 "content": item.get("body", ""), # Fallback to snippet initially
             })
 
-
         # 2. Fetch Content with Crawl4AI
         # Configure browser for Docker environment (headless, no-sandbox)
         browser_config = BrowserConfig(
@@ -95,7 +94,6 @@ async def web_search(q: str, max_results: int = 5):
 
         async with AsyncWebCrawler(config=browser_config) as crawler:
             for r in results[:2]: # Limit to top 2 to avoid timeout/memory issues
-
                 try:
                     logger.info(f"Crawling: {r['url']}")
                     result = await crawler.arun(url=r["url"], config=run_config)

@@ -172,7 +172,6 @@ export async function parsePdf(file) {
   }
 }
 
-
 /**
  * Analyze CSV file via FastAPI backend
  */
@@ -193,5 +192,4 @@ export async function analyzeCsv(file) {
     throw err
   }
 }
-
 

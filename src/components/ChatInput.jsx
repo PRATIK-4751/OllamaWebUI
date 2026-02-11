@@ -20,6 +20,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
   const { documents, addDocument, removeDocument, webSearchEnabled, setWebSearchEnabled } = useChatStore()
   const { isListening, transcript, isSupported: voiceSupported, startListening, stopListening } = useVoice()
 
+  // Auto-fill transcript into input
   useEffect(() => {
     if (transcript) {
       setInput(prev => prev + transcript)
@@ -106,8 +107,10 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
 
   return (
     <div className="p-4 transition-all duration-300">
+      {/* Document context pills */}
       <DocumentContext documents={documents} onRemove={removeDocument} />
 
+      {/* Image previews */}
       {images.length > 0 && (
         <div className="flex gap-3 mb-4 flex-wrap animate-fadeIn">
           {images.map((img, idx) => (
@@ -128,6 +131,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       )}
 
+      {/* URL input */}
       {showUrlInput && (
         <div className="flex gap-2 mb-3 animate-fadeIn">
           <input
@@ -152,21 +156,13 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       )}
 
+      {/* Input area */}
       <div className={`relative rounded-2xl transition-all duration-300 glass ${isFocused
         ? 'border-red-500/30 shadow-lg shadow-red-500/5'
         : 'border-border/30'
         } ${isDisabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
           {/* Attach button (images + PDFs + CSVs) */}
->>>>>>> 28c663c (Update application with latest changes to backend and frontend)
-=======
-
-          {/* Attach button (images + PDFs + CSVs) */}
-
->>>>>>> 3e47dda (Professional cleanup and final README improvements)
           {(config.enableImageUpload || config.enablePdfUpload) && (
             <button
               type="button"
@@ -216,11 +212,6 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
               <Link className="h-5 w-5" />
             </button>
           )}
-
-
-
-
-
 
           {/* Textarea */}
           <textarea
