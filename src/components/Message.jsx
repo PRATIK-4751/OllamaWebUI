@@ -25,8 +25,8 @@ export default function Message({ role, content, images }) {
       <div className={`flex gap-3 max-w-4xl ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar with classical frame */}
         <Avatar className={`flex-shrink-0 w-9 h-9 transition-transform duration-300 group-hover/msg:scale-105 ${isUser
-            ? 'ring-2 ring-red-500/30 shadow-lg shadow-red-500/10'
-            : 'ring-2 ring-amber-600/20 dark:ring-amber-400/15 shadow-lg shadow-amber-500/10'
+          ? 'ring-2 ring-red-500/30 shadow-lg shadow-red-500/10'
+          : 'ring-2 ring-amber-600/20 dark:ring-amber-400/15 shadow-lg shadow-amber-500/10'
           }`}>
           <AvatarImage
             src={isUser ? config.userAvatar : config.aiAvatar}
@@ -34,8 +34,8 @@ export default function Message({ role, content, images }) {
             className="object-cover"
           />
           <AvatarFallback className={`text-white ${isUser
-              ? 'bg-gradient-to-br from-red-500 to-rose-600'
-              : 'bg-gradient-to-br from-amber-700 to-amber-900'
+            ? 'bg-gradient-to-br from-red-500 to-rose-600'
+            : 'bg-gradient-to-br from-amber-700 to-amber-900'
             }`}>
             {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
           </AvatarFallback>
@@ -44,8 +44,8 @@ export default function Message({ role, content, images }) {
         {/* Message Bubble */}
         <div className="relative">
           <div className={`rounded-2xl px-5 py-3.5 transition-all duration-300 ${isUser
-              ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-br-md shadow-lg shadow-red-500/10'
-              : 'glass rounded-bl-md shadow-md hover:shadow-lg'
+            ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-br-md shadow-lg shadow-red-500/10'
+            : 'glass rounded-bl-md shadow-md hover:shadow-lg'
             }`}>
             {/* Images */}
             {images && images.length > 0 && (
@@ -75,6 +75,32 @@ export default function Message({ role, content, images }) {
                       <code className={`${isUser ? 'bg-white/15' : 'bg-red-500/10 text-red-600 dark:text-red-400'} px-1.5 py-0.5 rounded-md text-[0.85em] font-mono font-medium`} {...props}>
                         {children}
                       </code>
+                    )
+                  },
+                  img({ src, alt, ...props }) {
+                    return (
+                      <img
+                        src={src}
+                        alt={alt}
+                        className="max-w-full rounded-xl shadow-lg border border-border/20 my-4 cursor-pointer hover:opacity-90 transition-all duration-300 hover:scale-[1.01]"
+                        onClick={() => window.open(src, '_blank')}
+                        onError={(e) => {
+                          // Handle broken images by trying a placeholder or showing a better error UI
+                          if (alt?.toLowerCase().includes('random') || alt?.toLowerCase().includes('generate')) {
+                            e.target.src = `https://picsum.photos/seed/${encodeURIComponent(alt || 'generated')}/1200/800`
+                          } else {
+                            e.target.style.display = 'none'
+                            const parent = e.target.parentElement
+                            if (parent && !parent.querySelector('.img-error')) {
+                              const errorDiv = document.createElement('div')
+                              errorDiv.className = 'img-error text-[11px] text-muted-foreground/60 italic p-3 border border-dashed border-border/30 rounded-lg flex items-center gap-2'
+                              errorDiv.innerHTML = `<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Image could not be loaded: ${alt}`
+                              parent.appendChild(errorDiv)
+                            }
+                          }
+                        }}
+                        {...props}
+                      />
                     )
                   },
                   table({ children }) {
