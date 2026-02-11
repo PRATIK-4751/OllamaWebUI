@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useChatStore } from '../store/chatStore'
-import { streamChat, checkOllamaConnection, getWorkingUrl } from '../api'
+import { streamChat, checkOllamaConnection, getWorkingUrl, searchWeb, searchImages } from '../api'
 import config from '../config'
 import Message from './Message'
 import ChatInput from './ChatInput'
 import TypingIndicator from './TypingIndicator'
+import SearchResults from './SearchResults'
+import ImageResults from './ImageResults'
+import PromptTemplates from './PromptTemplates'
+import FileBrowser from './FileBrowser'
 import { Button } from './ui/button'
-import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle, Info } from 'lucide-react'
+import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle } from 'lucide-react'
 
 export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const {
@@ -23,12 +27,19 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     setIsLoading,
     isConnected,
     setIsConnected,
+    documents,
+    addDocument,
+    webSearchEnabled,
   } = useChatStore()
 
   const messagesEndRef = useRef(null)
   const abortRef = useRef(null)
+  const [searchResults, setSearchResults] = useState(null)
+  const [searchExpanded, setSearchExpanded] = useState(false)
+  const [imageResults, setImageResults] = useState(null)
+  const [imageQuery, setImageQuery] = useState('')
+  const [fileBrowserOpen, setFileBrowserOpen] = useState(false)
 
-  // Check Ollama connection on mount and periodically
   useEffect(() => {
     const check = async () => {
       const ok = await checkOllamaConnection()
@@ -51,6 +62,9 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     if (!currentChat || !isConnected) return
 
     setIsLoading(true)
+    setSearchResults(null)
+    setImageResults(null)
+    setImageQuery('')
 
     const userMsg = { role: 'user', content }
     if (images && images.length > 0) {
@@ -59,9 +73,53 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     addMessage(userMsg)
     addMessage({ role: 'assistant', content: '' })
 
-    // Build message history with system prompt
+    // Build context from documents
+    let docContext = ''
+    if (documents.length > 0) {
+      docContext = '\n\n--- DOCUMENT CONTEXT ---\n' +
+        documents.map(d => `[${d.name}]:\n${d.content.slice(0, 6000)}`).join('\n\n') +
+        '\n--- END DOCUMENT CONTEXT ---\n\nUse the document context above to answer questions when relevant.'
+    }
+
+    // Web search RAG
+    let searchContext = ''
+    if (webSearchEnabled) {
+      try {
+        const data = await searchWeb(content)
+        if (data.results && data.results.length > 0) {
+          setSearchResults(data.results)
+          setSearchExpanded(false)
+          searchContext = '\n\n--- WEB SEARCH RESULTS ---\n' +
+            data.results.map((r, i) => `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.content || r.snippet}`).join('\n\n') +
+            '\n--- END SEARCH RESULTS ---\n\nUse the search results above to provide an informed, up-to-date answer. Cite sources when possible.'
+        }
+      } catch (e) {
+        console.error('Search failed:', e)
+      }
+    }
+
+    // Image search (parallel with web search)
+    if (webSearchEnabled) {
+      try {
+        const imgData = await searchImages(content)
+        if (imgData.images && imgData.images.length > 0) {
+          setImageResults(imgData.images.slice(0, 4))
+          setImageQuery(content)
+        }
+      } catch (e) {
+        console.error('Image search failed:', e)
+      }
+    }
+
+    // Build message history with system prompt + contexts
+    const now = new Date()
+    const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    const dateContext = `\nCurrent date and time: ${dateStr}, ${timeStr}.`
+    const systemContent = (config.systemPrompt || 'You are a helpful AI assistant.') + dateContext + docContext + searchContext
+
     const history = [
-      { role: 'system', content: config.systemPrompt || 'You are a helpful AI assistant.' },
+      { role: 'system', content: systemContent },
       ...messages,
       userMsg
     ].map(m => ({
@@ -83,7 +141,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       () => { setIsLoading(false); persistMessages() },
       (error) => {
         console.error('Chat error:', error)
-        updateLastMessage(`\n\n⚠️ Error: ${error}`)
+        updateLastMessage(`\n\nError: ${error}`)
         setIsLoading(false)
         persistMessages()
       },
@@ -97,6 +155,24 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       setIsLoading(false)
       persistMessages()
     }
+  }
+
+  const handleTemplateSelect = (prompt) => {
+    if (!currentChat) {
+      createChat('New Chat')
+    }
+    // Pre-fill the prompt — user can edit before sending
+    const textarea = document.querySelector('textarea')
+    if (textarea) {
+      textarea.value = prompt + ' '
+      textarea.focus()
+      textarea.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+  }
+
+  const handleFileAdd = (doc) => {
+    addDocument(doc)
+    setFileBrowserOpen(false)
   }
 
   const showTyping = isLoading && messages.length > 0 &&
@@ -118,7 +194,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         />
 
         <div className="text-center max-w-lg animate-fadeIn relative z-10">
-          {/* Logo with Renaissance frame effect */}
+          {/* Logo */}
           <div className="relative w-36 h-36 mx-auto mb-8 group">
             <div className="absolute -inset-3 rounded-3xl animate-warm-glow"
               style={{ border: '2px solid rgba(180,150,100,0.15)' }} />
@@ -134,7 +210,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
               />
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-red-500/5 pointer-events-none" />
             </div>
-            {/* Orbiting particles */}
             <div className="absolute inset-0 animate-spin-slow">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-amber-500/70 shadow-lg shadow-amber-500/30" />
             </div>
@@ -165,6 +240,9 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             </div>
           </div>
 
+
+
+
           <div className="flex gap-4 justify-center flex-wrap">
             <Button
               onClick={handleNewChat}
@@ -183,7 +261,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             </Button>
           </div>
 
-          {/* Professional Status Area */}
+          {/* Status */}
           <div className="mt-12 group relative">
             <div className="flex items-center justify-center gap-3 text-[11px] font-bold tracking-[0.2em] uppercase transition-all duration-500">
               {isConnected ? (
@@ -198,11 +276,9 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
                 </div>
               )}
             </div>
-
-            {/* Very discrete help tooltip for Vercel users */}
             {!isConnected && (
               <div className="mt-4 text-[10px] text-muted-foreground/40 max-w-xs mx-auto leading-relaxed animate-fadeIn opacity-0 group-hover:opacity-100 transition-opacity">
-                Note: Online browsers may block local AI. Click site settings icon → "Allow Insecure Content" & Refresh.
+                Note: Online browsers may block local AI. Click site settings icon → "Allow Insecure Content" &amp; Refresh.
               </div>
             )}
           </div>
@@ -235,7 +311,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-amber-500 glass-subtle px-3 py-1.5 rounded-full">
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <div className="w-3 h-3 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
               Detecting...
             </div>
           )}
@@ -251,10 +327,35 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             </div>
             <p className="text-xl font-bold mb-1">Begin the Dialogue</p>
             <p className="text-sm opacity-50 font-medium tracking-wide">Your local AI is ready to assist</p>
+
+            {/* Templates in chat view too */}
+            {config.enablePromptTemplates && (
+              <div className="mt-8">
+                <PromptTemplates onSelect={handleTemplateSelect} />
+              </div>
+            )}
           </div>
         )}
+
         {displayMessages.map((msg, idx) => (
-          <Message key={idx} role={msg.role} content={msg.content} images={msg.images} />
+          <React.Fragment key={idx}>
+            <Message role={msg.role} content={msg.content} images={msg.images} />
+            {/* Show search results + images after the last assistant message that used search */}
+            {msg.role === 'assistant' && idx === displayMessages.length - 1 && (
+              <>
+                {searchResults && (
+                  <SearchResults
+                    results={searchResults}
+                    isExpanded={searchExpanded}
+                    onToggle={() => setSearchExpanded(!searchExpanded)}
+                  />
+                )}
+                {imageResults && (
+                  <ImageResults images={imageResults} query={imageQuery} />
+                )}
+              </>
+            )}
+          </React.Fragment>
         ))}
         {showTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
@@ -262,8 +363,21 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
 
       {/* Input */}
       <div className="border-t border-border/10 glass px-4 py-4 sm:px-6">
-        <ChatInput onSend={handleSend} onStop={handleStopGeneration} disabled={!isConnected} isLoading={isLoading} />
+        <ChatInput
+          onSend={handleSend}
+          onStop={handleStopGeneration}
+          disabled={!isConnected}
+          isLoading={isLoading}
+          onOpenFileBrowser={() => setFileBrowserOpen(true)}
+        />
       </div>
+
+      {/* File Browser Modal */}
+      <FileBrowser
+        isOpen={fileBrowserOpen}
+        onClose={() => setFileBrowserOpen(false)}
+        onAddToContext={handleFileAdd}
+      />
     </div>
   )
 }

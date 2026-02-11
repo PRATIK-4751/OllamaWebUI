@@ -6,13 +6,16 @@
 
 const config = {
     // Ollama (direct connection — no backend needed!)
-    // We use 127.0.0.1 instead of localhost for better compatibility in browsers
     ollamaUrl: import.meta.env.VITE_OLLAMA_URL || 'http://127.0.0.1:11434',
+
+    // FastAPI backend for web search, images, PDF parsing
+    // Empty default = same origin (Docker/nginx proxy). Set VITE_BACKEND_URL for local dev.
+    backendUrl: import.meta.env.VITE_BACKEND_URL || '',
 
     // Model
     defaultModel: import.meta.env.VITE_DEFAULT_MODEL || 'llava:7b',
 
-    // System prompt — sets the AI's personality and behavior
+    // System prompt
     systemPrompt: import.meta.env.VITE_SYSTEM_PROMPT || 'You are a helpful, friendly AI assistant. Be concise and clear in your responses. Use markdown formatting when appropriate.',
 
     // Branding
@@ -36,6 +39,13 @@ const config = {
     enableImageUpload: import.meta.env.VITE_ENABLE_IMAGE_UPLOAD !== 'false',
     enableChatSearch: import.meta.env.VITE_ENABLE_CHAT_SEARCH !== 'false',
     showModelInfo: import.meta.env.VITE_SHOW_MODEL_INFO !== 'false',
+
+    // New feature toggles
+    enableWebSearch: import.meta.env.VITE_ENABLE_WEB_SEARCH !== 'false',
+    enablePdfUpload: import.meta.env.VITE_ENABLE_PDF_UPLOAD !== 'false',
+    enableFileBrowser: import.meta.env.VITE_ENABLE_FILE_BROWSER !== 'false',
+    enableVoice: import.meta.env.VITE_ENABLE_VOICE !== 'false',
+    enablePromptTemplates: import.meta.env.VITE_ENABLE_PROMPT_TEMPLATES !== 'false',
 
     // Welcome screen
     feature1Label: import.meta.env.VITE_FEATURE_1_LABEL || 'Lightning Fast',

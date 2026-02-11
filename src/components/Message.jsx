@@ -4,11 +4,14 @@ import remarkGfm from 'remark-gfm'
 import CodeBlock from './CodeBlock'
 import config from '../config'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { Bot, User, Copy, Check } from 'lucide-react'
+import { Bot, User, Copy, Check, Volume2, VolumeX } from 'lucide-react'
+import { useVoice } from '../hooks/useVoice'
+import configApp from '../config'
 
 export default function Message({ role, content, images }) {
   const isUser = role === 'user'
   const [copiedMsg, setCopiedMsg] = useState(false)
+  const { speak, stopSpeaking, isSpeaking, isSupported: voiceSupported } = useVoice()
 
   const handleCopyMessage = useCallback(async () => {
     try {
@@ -144,9 +147,9 @@ export default function Message({ role, content, images }) {
             </div>
           </div>
 
-          {/* Copy button on hover */}
+          {/* Copy / Read buttons */}
           {!isUser && content && (
-            <div className="absolute -bottom-8 left-0 opacity-0 group-hover/msg:opacity-100 transition-all duration-200 flex gap-1">
+            <div className="mt-1.5 opacity-0 group-hover/msg:opacity-100 transition-all duration-200 flex gap-1">
               <button
                 onClick={handleCopyMessage}
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground glass-subtle transition-all duration-200 hover:shadow-sm"
@@ -157,6 +160,21 @@ export default function Message({ role, content, images }) {
                   <><Copy className="h-3 w-3" /><span>Copy</span></>
                 )}
               </button>
+              {configApp.enableVoice && voiceSupported && (
+                <button
+                  onClick={() => isSpeaking ? stopSpeaking() : speak(content)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs transition-all duration-200 hover:shadow-sm ${isSpeaking
+                    ? 'text-red-500 glass-subtle'
+                    : 'text-muted-foreground hover:text-foreground glass-subtle'
+                    }`}
+                >
+                  {isSpeaking ? (
+                    <><VolumeX className="h-3 w-3" /><span>Stop</span></>
+                  ) : (
+                    <><Volume2 className="h-3 w-3" /><span>Read</span></>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>

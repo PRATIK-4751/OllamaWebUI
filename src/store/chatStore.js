@@ -52,6 +52,12 @@ export const useChatStore = create((set, get) => ({
   // Connection state
   isConnected: false,
 
+  // Documents loaded for context (PDFs, files)
+  documents: [],
+
+  // Web search toggle
+  webSearchEnabled: false,
+
   // --- Chat actions ---
 
   createChat: (title) => {
@@ -156,6 +162,14 @@ export const useChatStore = create((set, get) => ({
   // --- Settings ---
   setTemperature: (temp) => set({ temperature: temp }),
   setContextWindow: (ctx) => set({ contextWindow: ctx }),
+
+  // --- Documents ---
+  addDocument: (doc) => set({ documents: [...get().documents, doc] }),
+  removeDocument: (idx) => set({ documents: get().documents.filter((_, i) => i !== idx) }),
+  clearDocuments: () => set({ documents: [] }),
+
+  // --- Web Search ---
+  setWebSearchEnabled: (enabled) => set({ webSearchEnabled: enabled }),
 
   // --- Export / Import ---
   exportChats: () => {

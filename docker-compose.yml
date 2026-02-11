@@ -5,8 +5,17 @@ services:
     ports:
       - "3000:80"
     restart: always
-    environment:
-      - VITE_OLLAMA_URL=http://localhost:11434
+    depends_on:
+      - backend
+    networks:
+      - ollama-network
+
+  backend:
+    build: ./backend
+    container_name: ollama-backend
+    ports:
+      - "8000:8000"
+    restart: always
     networks:
       - ollama-network
 

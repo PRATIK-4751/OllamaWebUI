@@ -1,57 +1,61 @@
-# Ollama WebUI - Renaissance Edition
+# Ollama WebUI — Renaissance Edition
 
-![Ollama WebUI Home](public/assets/home.png)
-
-A clean, high-aesthetic web interface for your local Ollama models. This application features a zero-latency direct connection to your local AI with a focus on premium typography and design.
+A beautiful, feature-rich web interface for your local Ollama models.
 
 ## Features
 
-| Vision Capabilities | Text Interface |
-| :---: | :---: |
-| ![Vision](public/assets/vision.png) | ![Text Interface](public/assets/textinterface.png) |
+- **Chat with any Ollama model** — text, vision, multimodal
+- **Web Search** — real-time search via DuckDuckGo (toggle ON/OFF)
+- **Image Search** — visual results alongside text answers
+- **PDF Upload & Q&A** — upload PDFs and ask questions about them
+- **URL Fetching** — pull content from any URL into context
+- **Voice Input & TTS** — speak your prompts, listen to responses
+- **Prompt Templates** — quick-start prompts for common tasks
+- **100% Local & Private** — your data never leaves your machine
 
-## How it Works
-
-This application is a frontend-only client that communicates directly with your local Ollama instance using the Fetch API.
-
-- **Direct Connection**: No backend server is required.
-- **Privacy**: All chat history is stored locally in your browser's localStorage.
-- **Multimodal Support**: Supports any vision-capable model (like llava, moondream, or bakllava).
-
-## Run with Docker
-
-You can run the pre-built image directly from Docker Hub:
+## Run with Docker (One Command)
 
 ```bash
-docker run -p 3000:80 lucifero19/ollama-webui:latest
+docker-compose up -d
 ```
 
-Once running, access the UI at http://localhost:3000.
+This starts both the **frontend** (port 3000) and **backend** (port 8000).
+
+Open **http://localhost:3000** in your browser.
+
+> You can also pull the pre-built image:
+> ```bash
+> docker pull lucifero19/ollama-webui:latest
+> ```
 
 ## Requirements
 
-You must have Ollama installed and running with CORS enabled.
+**Ollama** must be installed and running with CORS enabled:
 
-### Enable CORS (Required)
+```powershell
+# Windows PowerShell
+$env:OLLAMA_ORIGINS="*"; ollama serve
+```
 
-Browsers block direct connections by default. You must set the OLLAMA_ORIGINS environment variable:
-
-- **Windows (PowerShell)**:
-  ```powershell
-  $env:OLLAMA_ORIGINS="*"; ollama serve
-  ```
-- **Mac/Linux**:
-  ```bash
-  OLLAMA_ORIGINS="*" ollama serve
-  ```
+```bash
+# Mac / Linux
+OLLAMA_ORIGINS="*" ollama serve
+```
 
 ## Local Development
 
-If you prefer to run from source:
+```bash
+# Frontend
+npm install
+npm run dev          # → http://localhost:5173
 
-1. Install dependencies: `npm install`
-2. Start development server: `npm run dev`
-3. Access at: http://localhost:3000
+# Backend (in /backend)
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+Set `VITE_BACKEND_URL=http://127.0.0.1:8000` in `.env` for local dev.
 
 ## License
+
 MIT

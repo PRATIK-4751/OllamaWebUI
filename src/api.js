@@ -1,8 +1,8 @@
 // ===================================
-// Ollama Direct API Client
+// Ollama Direct API Client + Backend API
 // ===================================
 // Talks directly to user's local Ollama instance.
-// No backend server needed!
+// Uses FastAPI backend for web search & URL fetching.
 
 import config from './config'
 
@@ -11,30 +11,19 @@ let WORKING_URL = config.ollamaUrl
 
 /**
  * Check if Ollama is reachable
- * Tries both localhost and 127.0.0.1 if current one fails
  */
 export async function checkOllamaConnection() {
-  // Always try 127.0.0.1 first as it's more reliable for bypassing DNS blocks on Vercel
   const targets = ['http://127.0.0.1:11434', 'http://localhost:11434', WORKING_URL]
-
-  // Create a Set to remove duplicates
   const uniqueTargets = [...new Set(targets)]
 
   for (const url of uniqueTargets) {
     try {
-      // Use a shorter timeout for detection
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 2000)
-
-      const res = await fetch(url, {
-        method: 'GET',
-        signal: controller.signal
-      })
-
+      const res = await fetch(url, { method: 'GET', signal: controller.signal })
       clearTimeout(timeoutId)
-
       if (res.ok) {
-        WORKING_URL = url // Update working URL
+        WORKING_URL = url
         return true
       }
     } catch (err) {
@@ -148,3 +137,75 @@ export function fileToBase64(file) {
     reader.readAsDataURL(file)
   })
 }
+
+// ===================================
+// Backend API (FastAPI)
+// ===================================
+
+/**
+ * Web search via FastAPI backend
+ */
+export async function searchWeb(query) {
+  try {
+    const res = await fetch(`${config.backendUrl}/api/search?q=${encodeURIComponent(query)}`)
+    if (!res.ok) throw new Error(`Search failed: ${res.status}`)
+    return await res.json()
+  } catch (err) {
+    console.error('Web search error:', err)
+    return { query, results: [] }
+  }
+}
+
+/**
+ * Fetch URL content via FastAPI backend
+ */
+export async function fetchUrlContent(url) {
+  try {
+    const res = await fetch(`${config.backendUrl}/api/url/fetch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    })
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`)
+    return await res.json()
+  } catch (err) {
+    console.error('URL fetch error:', err)
+    return null
+  }
+}
+
+/**
+ * Search for images via FastAPI backend
+ */
+export async function searchImages(query) {
+  try {
+    const res = await fetch(`${config.backendUrl}/api/images?q=${encodeURIComponent(query)}`)
+    if (!res.ok) throw new Error(`Image search failed: ${res.status}`)
+    return await res.json()
+  } catch (err) {
+    console.error('Image search error:', err)
+    return { query, images: [] }
+  }
+}
+
+/**
+ * Parse PDF by uploading to FastAPI backend (uses PyMuPDF server-side)
+ */
+export async function parsePdf(file) {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch(`${config.backendUrl}/api/pdf/parse`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) throw new Error(`PDF parse failed: ${res.status}`)
+    return await res.json()
+  } catch (err) {
+    console.error('PDF parse error:', err)
+    throw err
+  }
+}
+
