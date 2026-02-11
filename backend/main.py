@@ -1,7 +1,6 @@
 """
 FastAPI Backend for Ollama WebUI
-Handles: Web Search, Image Search, URL Fetching, PDF Parsing
-Uses duckduckgo-search for reliable search results
+Handles Web Search, Image Search, URL Fetching, and PDF Parsing.
 """
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
@@ -40,8 +39,6 @@ def clean_text(html: str) -> str:
     return text[:8000]
 
 
-# ==================== WEB SEARCH ====================
-
 @app.get("/api/search")
 async def web_search(q: str, max_results: int = 5):
     """Search using DuckDuckGo and optionally fetch page content."""
@@ -61,7 +58,7 @@ async def web_search(q: str, max_results: int = 5):
                 "content": item.get("body", ""),
             })
 
-        # Fetch full content from top 2 results for richer context
+
         async with httpx.AsyncClient(timeout=8, follow_redirects=True) as client:
             for r in results[:2]:
                 try:
@@ -75,8 +72,6 @@ async def web_search(q: str, max_results: int = 5):
     except Exception as e:
         raise HTTPException(500, f"Search failed: {str(e)}")
 
-
-# ==================== IMAGE SEARCH ====================
 
 @app.get("/api/images")
 async def image_search(q: str, max_results: int = 8):
@@ -102,8 +97,6 @@ async def image_search(q: str, max_results: int = 8):
     except Exception as e:
         raise HTTPException(500, f"Image search failed: {str(e)}")
 
-
-# ==================== URL FETCHING ====================
 
 class UrlRequest(BaseModel):
     url: str
@@ -135,8 +128,6 @@ async def fetch_url(req: UrlRequest):
         raise HTTPException(500, f"Failed to fetch URL: {str(e)}")
 
 
-# ==================== PDF PARSING ====================
-
 @app.post("/api/pdf/parse")
 async def parse_pdf(file: UploadFile = File(...)):
     """Parse a PDF file and extract text from all pages."""
@@ -157,8 +148,6 @@ async def parse_pdf(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(500, f"Failed to parse PDF: {str(e)}")
 
-
-# ==================== HEALTH ====================
 
 @app.get("/api/health")
 async def health():

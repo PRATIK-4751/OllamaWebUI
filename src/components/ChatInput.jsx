@@ -20,7 +20,6 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
   const { documents, addDocument, removeDocument, webSearchEnabled, setWebSearchEnabled } = useChatStore()
   const { isListening, transcript, isSupported: voiceSupported, startListening, stopListening } = useVoice()
 
-  // Auto-fill transcript into input
   useEffect(() => {
     if (transcript) {
       setInput(prev => prev + transcript)
@@ -98,10 +97,8 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
 
   return (
     <div className="p-4 transition-all duration-300">
-      {/* Document context pills */}
       <DocumentContext documents={documents} onRemove={removeDocument} />
 
-      {/* Image previews */}
       {images.length > 0 && (
         <div className="flex gap-3 mb-4 flex-wrap animate-fadeIn">
           {images.map((img, idx) => (
@@ -122,7 +119,6 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
         </div>
       )}
 
-      {/* URL input */}
       {showUrlInput && (
         <div className="flex gap-2 mb-3 animate-fadeIn">
           <input
@@ -147,13 +143,11 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
         </div>
       )}
 
-      {/* Input area */}
       <div className={`relative rounded-2xl transition-all duration-300 glass ${isFocused
         ? 'border-red-500/30 shadow-lg shadow-red-500/5'
         : 'border-border/30'
         } ${isDisabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
-          {/* Attach button (images + PDFs) */}
           {(config.enableImageUpload || config.enablePdfUpload) && (
             <button
               type="button"
@@ -179,7 +173,6 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
             className="hidden"
           />
 
-          {/* Web search toggle */}
           {config.enableWebSearch && (
             <button
               type="button"
@@ -194,7 +187,6 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
             </button>
           )}
 
-          {/* URL fetch button */}
           {config.enableWebSearch && (
             <button
               type="button"
@@ -224,7 +216,6 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
             style={{ scrollbarWidth: 'thin' }}
           />
 
-          {/* Voice button */}
           {config.enableVoice && voiceSupported && (
             <button
               type="button"
@@ -239,7 +230,6 @@ export default function ChatInput({ onSend, onStop, disabled = false, isLoading 
             </button>
           )}
 
-          {/* Send or Stop button */}
           {isLoading ? (
             <button
               onClick={onStop}

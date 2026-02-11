@@ -73,7 +73,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     addMessage(userMsg)
     addMessage({ role: 'assistant', content: '' })
 
-    // Build context from documents
     let docContext = ''
     if (documents.length > 0) {
       docContext = '\n\n--- DOCUMENT CONTEXT ---\n' +
@@ -81,7 +80,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         '\n--- END DOCUMENT CONTEXT ---\n\nUse the document context above to answer questions when relevant.'
     }
 
-    // Web search RAG
     let searchContext = ''
     if (webSearchEnabled) {
       try {
@@ -98,7 +96,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       }
     }
 
-    // Image search (parallel with web search)
     if (webSearchEnabled) {
       try {
         const imgData = await searchImages(content)
@@ -111,7 +108,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       }
     }
 
-    // Build message history with system prompt + contexts
     const now = new Date()
     const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
@@ -161,7 +157,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     if (!currentChat) {
       createChat('New Chat')
     }
-    // Pre-fill the prompt — user can edit before sending
     const textarea = document.querySelector('textarea')
     if (textarea) {
       textarea.value = prompt + ' '
@@ -184,17 +179,14 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     return true
   })
 
-  // ========== Welcome Screen ==========
   if (!currentChat) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-4 transition-all duration-500 relative overflow-hidden">
-        {/* Warm ambient glow */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-25 blur-[160px] pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(180,100,50,0.4) 0%, rgba(220,38,38,0.2) 40%, transparent 70%)' }}
         />
 
         <div className="text-center max-w-lg animate-fadeIn relative z-10">
-          {/* Logo */}
           <div className="relative w-36 h-36 mx-auto mb-8 group">
             <div className="absolute -inset-3 rounded-3xl animate-warm-glow"
               style={{ border: '2px solid rgba(180,150,100,0.15)' }} />
@@ -224,7 +216,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             {config.appSubtitle}
           </p>
 
-          {/* Feature cards */}
           <div className="grid grid-cols-3 gap-4 mb-10">
             <div className="glass-card p-5 rounded-2xl hover:-translate-y-1 transition-all duration-300">
               <Zap className="h-6 w-6 text-amber-500 mx-auto mb-2" />
@@ -261,7 +252,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             </Button>
           </div>
 
-          {/* Status */}
           <div className="mt-12 group relative">
             <div className="flex items-center justify-center gap-3 text-[11px] font-bold tracking-[0.2em] uppercase transition-all duration-500">
               {isConnected ? (
@@ -287,10 +277,8 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     )
   }
 
-  // ========== Chat View ==========
   return (
     <div className="flex-1 flex flex-col h-full pt-16">
-      {/* Chat header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/10 glass">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="h-10 w-10 hover:bg-muted/50 rounded-xl">
@@ -318,7 +306,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         </div>
       </div>
 
-      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {displayMessages.length === 0 && !showTyping && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground animate-fadeIn">
@@ -361,7 +348,6 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-border/10 glass px-4 py-4 sm:px-6">
         <ChatInput
           onSend={handleSend}

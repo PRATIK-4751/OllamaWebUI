@@ -1,17 +1,7 @@
-// ===================================
-// Ollama Direct API Client + Backend API
-// ===================================
-// Talks directly to user's local Ollama instance.
-// Uses FastAPI backend for web search & URL fetching.
-
 import config from './config'
 
-// Store the working URL (default to config value or 127.0.0.1)
 let WORKING_URL = config.ollamaUrl
 
-/**
- * Check if Ollama is reachable
- */
 export async function checkOllamaConnection() {
   const targets = ['http://127.0.0.1:11434', 'http://localhost:11434', WORKING_URL]
   const uniqueTargets = [...new Set(targets)]
@@ -27,7 +17,7 @@ export async function checkOllamaConnection() {
         return true
       }
     } catch (err) {
-      // Continue to next target
+      // connection error ignored
     }
   }
   return false
@@ -37,24 +27,16 @@ export function getWorkingUrl() {
   return WORKING_URL
 }
 
-/**
- * List available models from Ollama
- */
 export async function getModels() {
-  const url = WORKING_URL
-  const res = await fetch(`${url}/api/tags`)
+  const res = await fetch(`${WORKING_URL}/api/tags`)
   if (!res.ok) throw new Error('Failed to fetch models')
   const data = await res.json()
   return data.models || []
 }
 
-/**
- * Stream a chat response from Ollama
- */
 export async function streamChat({ model, messages, temperature, num_ctx }, onToken, onDone, onError, signal) {
-  const url = WORKING_URL
   try {
-    const res = await fetch(`${url}/api/chat`, {
+    const res = await fetch(`${WORKING_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -99,7 +81,7 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
             return
           }
         } catch (e) {
-          // Skip
+          // parse error ignored
         }
       }
     }
@@ -110,7 +92,9 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
         if (json.message?.content) {
           onToken(json.message.content)
         }
-      } catch (e) { /* Skip */ }
+      } catch (e) {
+        // final parse error ignored
+      }
     }
 
     onDone?.()
@@ -123,9 +107,6 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
   }
 }
 
-/**
- * Convert a File to base64 string
- */
 export function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -138,13 +119,6 @@ export function fileToBase64(file) {
   })
 }
 
-// ===================================
-// Backend API (FastAPI)
-// ===================================
-
-/**
- * Web search via FastAPI backend
- */
 export async function searchWeb(query) {
   try {
     const res = await fetch(`${config.backendUrl}/api/search?q=${encodeURIComponent(query)}`)
@@ -156,9 +130,6 @@ export async function searchWeb(query) {
   }
 }
 
-/**
- * Fetch URL content via FastAPI backend
- */
 export async function fetchUrlContent(url) {
   try {
     const res = await fetch(`${config.backendUrl}/api/url/fetch`, {
@@ -174,9 +145,6 @@ export async function fetchUrlContent(url) {
   }
 }
 
-/**
- * Search for images via FastAPI backend
- */
 export async function searchImages(query) {
   try {
     const res = await fetch(`${config.backendUrl}/api/images?q=${encodeURIComponent(query)}`)
@@ -188,19 +156,14 @@ export async function searchImages(query) {
   }
 }
 
-/**
- * Parse PDF by uploading to FastAPI backend (uses PyMuPDF server-side)
- */
 export async function parsePdf(file) {
   try {
     const formData = new FormData()
     formData.append('file', file)
-
     const res = await fetch(`${config.backendUrl}/api/pdf/parse`, {
       method: 'POST',
       body: formData,
     })
-
     if (!res.ok) throw new Error(`PDF parse failed: ${res.status}`)
     return await res.json()
   } catch (err) {
@@ -208,4 +171,3 @@ export async function parsePdf(file) {
     throw err
   }
 }
-
