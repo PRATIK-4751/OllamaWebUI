@@ -1,7 +1,3 @@
-/**
- * useVoice — Custom hook for Voice Input (STT) and Text-to-Speech (TTS)
- * Uses Web Speech API (Chrome/Edge/Safari)
- */
 import { useState, useRef, useCallback } from 'react'
 
 export function useVoice() {
@@ -55,7 +51,7 @@ export function useVoice() {
         if (!window.speechSynthesis) return
         window.speechSynthesis.cancel()
 
-        // Strip markdown for cleaner speech
+
         const clean = text
             .replace(/```[\s\S]*?```/g, 'code block')
             .replace(/`([^`]+)`/g, '$1')

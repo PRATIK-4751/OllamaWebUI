@@ -89,15 +89,15 @@ export default function Sidebar({ isOpen, onToggle }) {
 
   return (
     <>
-      {/* Backdrop */}
+      {}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fadeIn"
         onClick={onToggle}
       />
 
-      {/* Sidebar */}
+      {}
       <div className="fixed left-0 top-0 bottom-0 w-80 glass-strong flex flex-col h-full shadow-2xl z-50 animate-slideRight">
-        {/* Header */}
+        {}
         <div className="p-4 border-b border-border/20">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-foreground">
@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen, onToggle }) {
             </div>
           </div>
 
-          {/* Search */}
+          {}
           {config.enableChatSearch && (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
@@ -137,7 +137,7 @@ export default function Sidebar({ isOpen, onToggle }) {
           )}
         </div>
 
-        {/* Chat list */}
+        {}
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {filteredChats.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-muted-foreground/50">
@@ -181,7 +181,7 @@ export default function Sidebar({ isOpen, onToggle }) {
           )}
         </div>
 
-        {/* Footer with Export/Import */}
+        {}
         <div className="p-4 border-t border-border/20 space-y-3">
           <div className="flex gap-2">
             <button

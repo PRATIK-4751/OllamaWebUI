@@ -1,7 +1,3 @@
-/**
- * Prompt Templates — Pre-built presets for common tasks
- */
-
 const promptTemplates = [
     {
         id: 'code-review',

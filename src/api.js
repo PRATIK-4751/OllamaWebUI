@@ -17,7 +17,7 @@ export async function checkOllamaConnection() {
         return true
       }
     } catch (err) {
-      // connection error ignored
+
     }
   }
   return false
@@ -81,7 +81,7 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
             return
           }
         } catch (e) {
-          // parse error ignored
+
         }
       }
     }
@@ -93,7 +93,7 @@ export async function streamChat({ model, messages, temperature, num_ctx }, onTo
           onToken(json.message.content)
         }
       } catch (e) {
-        // final parse error ignored
+
       }
     }
 
@@ -172,9 +172,7 @@ export async function parsePdf(file) {
   }
 }
 
-/**
- * Analyze CSV file via FastAPI backend
- */
+
 export async function analyzeCsv(file) {
   try {
     const formData = new FormData()
@@ -192,4 +190,3 @@ export async function analyzeCsv(file) {
     throw err
   }
 }
-

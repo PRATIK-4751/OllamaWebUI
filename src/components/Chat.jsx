@@ -119,8 +119,8 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     const dateContext = `\nCurrent date and time: ${dateStr}, ${timeStr}.`
     const systemContent = (config.systemPrompt || 'You are a helpful AI assistant.') + dateContext + docContext + searchContext
 
-    // Inject document context directly into the user prompt for immediate attention
-    // (This is often more effective than system prompt for "Talk to Data" scenarios)
+
+
     let finalUserContent = userMsg.content
     if (documents.length > 0) {
       const relevantDocs = documents.map(d => `--- FILE: ${d.name} ---\n${d.content.slice(0, 8000)}`).join('\n\n')
@@ -130,7 +130,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     const history = [
       { role: 'system', content: systemContent },
       ...messages,
-      { ...userMsg, content: finalUserContent } // Use modified content for the API call
+      { ...userMsg, content: finalUserContent }
     ].map(m => ({
       role: m.role,
       content: m.content,
@@ -139,11 +139,11 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
 
     abortRef.current = new AbortController()
 
-    // Check for "Analyze" intent in user prompt
+
     const analysisKeywords = ['plot', 'graph', 'chart', 'analyze', 'visualization', 'heatmap', 'histogram', 'trend', 'visualise']
     const hasAnalysisKeyword = analysisKeywords.some(kw => content.toLowerCase().includes(kw))
 
-    // Find attached CSV file from documents (we stored fileObject in ChatInput)
+
     const csvDoc = documents.find(d => d.name.endsWith('.csv') && d.fileObject)
 
     if (hasAnalysisKeyword && csvDoc) {
@@ -352,7 +352,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             <p className="text-xl font-bold mb-1">Begin the Dialogue</p>
             <p className="text-sm opacity-50 font-medium tracking-wide">Your local AI is ready to assist</p>
 
-            {/* Templates in chat view too */}
+            {}
             {config.enablePromptTemplates && (
               <div className="mt-8">
                 <PromptTemplates onSelect={handleTemplateSelect} />
@@ -364,11 +364,11 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         {displayMessages.map((msg, idx) => (
           <React.Fragment key={idx}>
             <Message role={msg.role} content={msg.content} images={msg.images} />
-            {/* Show analysis results at the bottom */}
+            {}
             {idx === displayMessages.length - 1 && analysisData && (
               <AnalysisResults data={analysisData} onClose={() => setAnalysisData(null)} />
             )}
-            {/* Show search results + images after the last assistant message that used search */}
+            {}
             {msg.role === 'assistant' && idx === displayMessages.length - 1 && (
               <>
                 {searchResults && (
@@ -400,7 +400,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         />
       </div>
 
-      {/* File Browser Modal */}
+      {}
       <FileBrowser
         isOpen={fileBrowserOpen}
         onClose={() => setFileBrowserOpen(false)}

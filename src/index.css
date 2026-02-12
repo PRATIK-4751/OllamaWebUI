@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===================================
-   Renaissance / Classical Art Theme 2.0
-   =================================== */
+
 
 @layer base {
 
-  /* ---- Dark Theme: Obsidian Baroque (DEFAULT) ---- */
+
   :root {
     --background: 20 20% 5%;
     --foreground: 35 25% 92%;
@@ -32,7 +30,7 @@
     --radius: 1rem;
   }
 
-  /* ---- Light Theme: Aged Antique Parchment ---- */
+
   .light {
     --background: 35 30% 88%;
     --foreground: 25 30% 12%;
@@ -83,9 +81,7 @@
   }
 }
 
-/* ===================================
-   Background Image Layer
-   =================================== */
+
 .bg-themed {
   position: relative;
   background-color: hsl(var(--background));
@@ -107,7 +103,7 @@
   transition: all 0.5s ease;
 }
 
-/* Vignette overlay to make text pop */
+
 .bg-themed::after {
   content: '';
   position: fixed;
@@ -117,27 +113,25 @@
   pointer-events: none;
 }
 
-/* Dark mode (default) */
+
 :root .bg-themed::before {
   background-image: var(--bg-dark);
   opacity: 0.22;
   filter: brightness(0.7) contrast(110%);
 }
 
-/* Light mode */
+
 .light .bg-themed::before {
   background-image: var(--bg-light);
   opacity: 0.18;
   filter: sepia(20%) contrast(90%);
 }
 
-/* ===================================
-   Glassmorphism Utilities (Revised for better contrast)
-   =================================== */
+
 @layer utilities {
   .glass {
     background: hsla(var(--card), 0.85);
-    /* Increased opacity from 0.6 to 0.85 */
+
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid hsla(var(--border), 0.3);
@@ -171,10 +165,10 @@
   }
 }
 
-/* Dark theme (default) glass overrides */
+
 :root .glass {
   background: hsla(var(--card), 0.75);
-  /* Darker and more opaque for AI bubbles */
+
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
   border-color: hsla(var(--border), 0.5);
 }
@@ -189,9 +183,7 @@
   border-color: hsla(var(--border), 0.3);
 }
 
-/* ================= =================
-   Animations
-   =================================== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -253,9 +245,7 @@
   animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ===================================
-   Custom UI Elements
-   =================================== */
+
 .renaissance-border {
   border: 1px solid transparent;
   background: linear-gradient(var(--card), var(--card)) padding-box,

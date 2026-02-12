@@ -8,7 +8,7 @@ import config from './config'
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Set document title and background CSS variables from config
+
   useEffect(() => {
     document.title = config.appTitle
     document.documentElement.style.setProperty('--bg-dark', `url(${config.bgDark})`)

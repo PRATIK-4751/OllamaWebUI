@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import config from '../config'
 
-// ===================================
-// localStorage helpers
-// ===================================
+
+
+
 const STORAGE_KEY = 'ollama-webui-chats'
 
 function loadChatsFromStorage() {
@@ -23,42 +23,42 @@ function saveChatsToStorage(chats) {
   }
 }
 
-// ===================================
-// Chat Store (Zustand + localStorage)
-// ===================================
+
+
+
 export const useChatStore = create((set, get) => ({
-  // Chats list (persisted in localStorage)
+
   chats: loadChatsFromStorage(),
 
-  // Current active chat
+
   currentChat: null,
 
-  // Messages for current chat
+
   messages: [],
 
-  // Available models
+
   models: [],
 
-  // Selected model
+
   selectedModel: config.defaultModel,
 
-  // Settings
+
   temperature: 0.7,
   contextWindow: 4096,
 
-  // Loading state
+
   isLoading: false,
 
-  // Connection state
+
   isConnected: false,
 
-  // Documents loaded for context (PDFs, files)
+
   documents: [],
 
-  // Web search toggle
+
   webSearchEnabled: false,
 
-  // --- Chat actions ---
+
 
   createChat: (title) => {
     const chat = {
@@ -88,7 +88,7 @@ export const useChatStore = create((set, get) => ({
 
   setCurrentChat: (chat) => {
     if (chat) {
-      // Load messages from the chat object
+
       const storedChat = get().chats.find(c => c.id === chat.id)
       set({
         currentChat: storedChat || chat,
@@ -102,7 +102,7 @@ export const useChatStore = create((set, get) => ({
   addMessage: (message) => {
     const messages = [...get().messages, message]
     set({ messages })
-    // Persist to chat
+
     get()._persistMessages(messages)
   },
 
@@ -118,7 +118,7 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // Persist final messages to localStorage when streaming is done
+
   persistMessages: () => {
     get()._persistMessages(get().messages)
   },
@@ -127,7 +127,7 @@ export const useChatStore = create((set, get) => ({
     const { currentChat, chats } = get()
     if (!currentChat) return
 
-    // Auto-title from first user message
+
     let title = currentChat.title
     if (title === 'New Chat' && messages.length > 0) {
       const firstUserMsg = messages.find(m => m.role === 'user')
@@ -151,27 +151,27 @@ export const useChatStore = create((set, get) => ({
   setMessages: (messages) => set({ messages }),
   setChats: (chats) => set({ chats }),
 
-  // --- Model actions ---
+
   setModels: (models) => set({ models }),
   setSelectedModel: (model) => set({ selectedModel: model }),
 
-  // --- UI state ---
+
   setIsLoading: (loading) => set({ isLoading: loading }),
   setIsConnected: (connected) => set({ isConnected: connected }),
 
-  // --- Settings ---
+
   setTemperature: (temp) => set({ temperature: temp }),
   setContextWindow: (ctx) => set({ contextWindow: ctx }),
 
-  // --- Documents ---
+
   addDocument: (doc) => set({ documents: [...get().documents, doc] }),
   removeDocument: (idx) => set({ documents: get().documents.filter((_, i) => i !== idx) }),
   clearDocuments: () => set({ documents: [] }),
 
-  // --- Web Search ---
+
   setWebSearchEnabled: (enabled) => set({ webSearchEnabled: enabled }),
 
-  // --- Export / Import ---
+
   exportChats: () => {
     const data = JSON.stringify(get().chats, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
@@ -189,7 +189,7 @@ export const useChatStore = create((set, get) => ({
       if (!Array.isArray(imported)) throw new Error('Invalid format')
       const existing = get().chats
       const merged = [...imported, ...existing]
-      // Deduplicate by ID
+
       const unique = merged.filter((chat, idx, arr) =>
         arr.findIndex(c => c.id === chat.id) === idx
       )

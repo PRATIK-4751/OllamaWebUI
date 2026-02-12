@@ -31,7 +31,7 @@ export default function FileBrowser({ isOpen, onClose, onAddToContext }) {
             setPath([handle])
             await listEntries(handle)
         } catch (e) {
-            // User cancelled
+
         }
     }
 
@@ -89,7 +89,7 @@ export default function FileBrowser({ isOpen, onClose, onAddToContext }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
             <div className="relative w-full max-w-2xl max-h-[80vh] glass-strong rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
-                {/* Header */}
+                {}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border/20">
                     <div className="flex items-center gap-3">
                         <FolderOpen className="h-5 w-5 text-red-500" />
@@ -101,7 +101,7 @@ export default function FileBrowser({ isOpen, onClose, onAddToContext }) {
                 </div>
 
                 {!dirHandle ? (
-                    /* No folder selected */
+
                     <div className="flex flex-col items-center justify-center py-16 px-6">
                         {isSupported ? (
                             <>
@@ -124,11 +124,11 @@ export default function FileBrowser({ isOpen, onClose, onAddToContext }) {
                         )}
                     </div>
                 ) : (
-                    /* File list + preview */
+
                     <div className="flex flex-1 min-h-0">
-                        {/* File list */}
+                        {}
                         <div className="w-1/2 border-r border-border/20 flex flex-col">
-                            {/* Breadcrumb */}
+                            {}
                             <div className="flex items-center gap-1 px-3 py-2 border-b border-border/10 text-xs text-muted-foreground overflow-x-auto">
                                 {path.length > 1 && (
                                     <button onClick={goBack} className="h-6 w-6 rounded flex items-center justify-center hover:bg-muted/50 flex-shrink-0">
@@ -143,7 +143,7 @@ export default function FileBrowser({ isOpen, onClose, onAddToContext }) {
                                 ))}
                             </div>
 
-                            {/* Entries */}
+                            {}
                             <div className="flex-1 overflow-y-auto p-1">
                                 {loading ? (
                                     <div className="flex items-center justify-center py-8">
@@ -171,7 +171,7 @@ export default function FileBrowser({ isOpen, onClose, onAddToContext }) {
                             </div>
                         </div>
 
-                        {/* Preview */}
+                        {}
                         <div className="w-1/2 flex flex-col">
                             {preview ? (
                                 <>

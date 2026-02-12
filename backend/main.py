@@ -1,8 +1,3 @@
-"""
-FastAPI Backend for Ollama WebUI
-Handles Web Search, Image Search, URL Fetching, and PDF Parsing.
-"""
-
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -18,7 +13,7 @@ from duckduckgo_search import DDGS
 from crawl4ai import AsyncWebCrawler
 from crawl4ai.async_configs import BrowserConfig, CrawlerRunConfig
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -38,7 +33,7 @@ HEADERS = {
 
 
 def clean_text(html: str) -> str:
-    """Extract clean text from HTML."""
+
     try:
         soup = BeautifulSoup(html, "lxml")
         for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
@@ -53,14 +48,14 @@ def clean_text(html: str) -> str:
 
 @app.get("/api/search")
 async def web_search(q: str, max_results: int = 5):
-    """Search using DuckDuckGo and fetch content using Crawl4AI (Playwright)."""
+
     if not q.strip():
         raise HTTPException(400, "Query cannot be empty")
 
     logger.info(f"Adding search for: {q}")
 
     try:
-        # 1. Perform DuckDuckGo Search
+
         try:
             with DDGS() as ddgs:
                 raw = list(ddgs.text(q, max_results=max_results))
@@ -74,11 +69,11 @@ async def web_search(q: str, max_results: int = 5):
                 "title": item.get("title", ""),
                 "url": item.get("href", ""),
                 "snippet": item.get("body", ""),
-                "content": item.get("body", ""), # Fallback to snippet initially
+                "content": item.get("body", ""),
             })
 
-        # 2. Fetch Content with Crawl4AI
-        # Configure browser for Docker environment (headless, no-sandbox)
+
+
         browser_config = BrowserConfig(
             headless=True,
             verbose=True,
@@ -93,25 +88,25 @@ async def web_search(q: str, max_results: int = 5):
         )
 
         async with AsyncWebCrawler(config=browser_config) as crawler:
-            for r in results[:2]: # Limit to top 2 to avoid timeout/memory issues
+            for r in results[:2]:
                 try:
                     logger.info(f"Crawling: {r['url']}")
                     result = await crawler.arun(url=r["url"], config=run_config)
-                    
+
                     if result.success:
-                        # Prefer markdown, fallback to cleaned HTML
+
                         content = result.markdown if result.markdown else clean_text(result.html)
                         if content:
-                             r["content"] = content[:5000] # Limit content length
+                             r["content"] = content[:5000]
                              logger.info(f"Successfully crawled {r['url']} ({len(content)} chars)")
                         else:
                              logger.warning(f"Crawled {r['url']} but got empty content")
                     else:
                         logger.warning(f"Failed to crawl {r['url']}: {result.error_message}")
-                        
+
                 except Exception as e:
                     logger.error(f"Exception exploring {r['url']}: {e}")
-                    # Fallback to simple HTTP if browser crashes
+
                     try:
                         async with httpx.AsyncClient(timeout=5) as client:
                             resp = await client.get(r["url"], headers=HEADERS)
@@ -130,7 +125,7 @@ async def web_search(q: str, max_results: int = 5):
 
 @app.get("/api/images")
 async def image_search(q: str, max_results: int = 8):
-    """Search for images using DuckDuckGo."""
+
     if not q.strip():
         raise HTTPException(400, "Query cannot be empty")
 
@@ -160,7 +155,7 @@ class UrlRequest(BaseModel):
 
 @app.post("/api/url/fetch")
 async def fetch_url(req: UrlRequest):
-    """Fetch a URL using Crawl4AI (Playwright) for accurate content extraction."""
+
     if not req.url.strip():
         raise HTTPException(400, "URL cannot be empty")
 
@@ -179,12 +174,12 @@ async def fetch_url(req: UrlRequest):
 
         async with AsyncWebCrawler(config=browser_config) as crawler:
             result = await crawler.arun(url=req.url, config=run_config)
-            
+
             if not result.success:
                 raise Exception(f"Crawl failed: {result.error_message}")
-            
+
             title = req.url
-            # Try to parse title from HTML if available
+
             if result.html:
                  try:
                     soup = BeautifulSoup(result.html, "lxml")
@@ -203,7 +198,7 @@ async def fetch_url(req: UrlRequest):
 
     except Exception as e:
         logger.error(f"Crawl4AI failed for {req.url}: {e}")
-        # Fallback to HTTPX
+
         try:
             async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
                 resp = await client.get(req.url, headers=HEADERS)
@@ -220,7 +215,7 @@ async def fetch_url(req: UrlRequest):
 
 @app.post("/api/pdf/parse")
 async def parse_pdf(file: UploadFile = File(...)):
-    """Parse a PDF file and extract text from all pages."""
+
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "File must be a PDF")
 
@@ -245,7 +240,7 @@ async def health():
     return {"status": "ok"}
 
 
-# ==================== DATA ANALYSIS ====================
+
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -254,7 +249,7 @@ import base64
 
 @app.post("/api/data/analyze")
 async def analyze_data(file: UploadFile = File(...)):
-    """Analyze a CSV file and return summary stats + plots."""
+
     if not file.filename.lower().endswith(".csv"):
         raise HTTPException(400, "File must be a CSV")
 
@@ -262,26 +257,26 @@ async def analyze_data(file: UploadFile = File(...)):
         content = await file.read()
         df = pd.read_csv(io.BytesIO(content))
 
-        # Basic Stats
+
         summary = df.describe().to_string()
         columns = df.columns.tolist()
-        
+
         info = {
             "rows": len(df),
             "columns": columns,
             "summary": summary,
-            "head": df.head().to_string() # First 5 rows as context
+            "head": df.head().to_string()
         }
 
         plots = []
 
-        # 1. Correlation Heatmap (if enough numeric cols)
+
         numeric_df = df.select_dtypes(include=['float64', 'int64'])
         if len(numeric_df.columns) > 1:
             plt.figure(figsize=(10, 8))
             sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm', fmt=".2f")
             plt.title("Correlation Heatmap")
-            
+
             buf = io.BytesIO()
             plt.savefig(buf, format='png', bbox_inches='tight')
             buf.seek(0)
@@ -291,13 +286,13 @@ async def analyze_data(file: UploadFile = File(...)):
             })
             plt.close()
 
-        # 2. Pairplot (for first 4 numeric vars to avoid clutter)
+
         if len(numeric_df.columns) >= 2:
             try:
-                # Limit to 500 samples for speed
+
                 sample_df = numeric_df.sample(min(500, len(df))) if len(df) > 500 else numeric_df
                 sns.pairplot(sample_df.iloc[:, :4])
-                
+
                 buf = io.BytesIO()
                 plt.savefig(buf, format='png', bbox_inches='tight')
                 buf.seek(0)
@@ -309,13 +304,13 @@ async def analyze_data(file: UploadFile = File(...)):
             except Exception as e:
                 logger.warning(f"Pairplot failed: {e}")
 
-        # 3. Distribution (Histogram) of first numeric column
+
         if len(numeric_df.columns) > 0:
             first_col = numeric_df.columns[0]
             plt.figure(figsize=(8, 6))
             sns.histplot(df[first_col], kde=True)
             plt.title(f"Distribution of {first_col}")
-            
+
             buf = io.BytesIO()
             plt.savefig(buf, format='png', bbox_inches='tight')
             buf.seek(0)

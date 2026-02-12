@@ -20,7 +20,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
   const { documents, addDocument, removeDocument, webSearchEnabled, setWebSearchEnabled } = useChatStore()
   const { isListening, transcript, isSupported: voiceSupported, startListening, stopListening } = useVoice()
 
-  // Auto-fill transcript into input
+
   useEffect(() => {
     if (transcript) {
       setInput(prev => prev + transcript)
@@ -62,20 +62,20 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
     for (const file of files) {
       try {
         if (file.type === 'application/pdf') {
-          // Parse PDF client-side
+
           const doc = await parsePdf(file)
           addDocument(doc)
         } else if (file.type.startsWith('image/')) {
           const base64 = await fileToBase64(file)
           setImages(prev => [...prev, base64])
         } else if (file.name.endsWith('.csv')) {
-          // Read CSV text for LLM context
+
           const text = await new Promise((resolve) => {
             const reader = new FileReader()
             reader.onload = (e) => resolve(e.target.result)
             reader.readAsText(file)
           })
-          // Add to context (truncated)
+
           addDocument({ name: file.name, content: text.slice(0, 10000), fileObject: file })
         }
       } catch (error) {
@@ -107,10 +107,10 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
 
   return (
     <div className="p-4 transition-all duration-300">
-      {/* Document context pills */}
+      {}
       <DocumentContext documents={documents} onRemove={removeDocument} />
 
-      {/* Image previews */}
+      {}
       {images.length > 0 && (
         <div className="flex gap-3 mb-4 flex-wrap animate-fadeIn">
           {images.map((img, idx) => (
@@ -131,7 +131,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       )}
 
-      {/* URL input */}
+      {}
       {showUrlInput && (
         <div className="flex gap-2 mb-3 animate-fadeIn">
           <input
@@ -156,13 +156,13 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       )}
 
-      {/* Input area */}
+      {}
       <div className={`relative rounded-2xl transition-all duration-300 glass ${isFocused
         ? 'border-red-500/30 shadow-lg shadow-red-500/5'
         : 'border-border/30'
         } ${isDisabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
-          {/* Attach button (images + PDFs + CSVs) */}
+          {}
           {(config.enableImageUpload || config.enablePdfUpload) && (
             <button
               type="button"
@@ -183,37 +183,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
             type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
-            accept={`${config.enableImageUpload ? 'image/*,' : ''}${config.enablePdfUpload ? 'application/pdf,' : ''}.csv`}
-            multiple
-            className="hidden"
-          />
-
-          {config.enableWebSearch && (
-            <button
-              type="button"
-              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-              className={`flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 ${webSearchEnabled
-                ? 'bg-red-500/15 text-red-500 ring-1 ring-red-500/30'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
-                }`}
-              title={webSearchEnabled ? 'Web search ON' : 'Web search OFF'}
-            >
-              <Globe className="h-5 w-5" />
-            </button>
-          )}
-
-          {config.enableWebSearch && (
-            <button
-              type="button"
-              onClick={() => setShowUrlInput(!showUrlInput)}
-              className="flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
-              title="Fetch URL content"
-            >
-              <Link className="h-5 w-5" />
-            </button>
-          )}
-
-          {/* Textarea */}
+            accept={`${config.enableImageUpload ? 'image}
           <textarea
             ref={textareaRef}
             value={input}

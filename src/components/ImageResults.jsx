@@ -8,7 +8,7 @@ export default function ImageResults({ images, query }) {
 
     return (
         <>
-            {/* Small image thumbnails */}
+            {}
             <div className="mb-2 animate-fadeIn">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
                     <Search className="h-2.5 w-2.5 text-red-500" />
@@ -33,7 +33,7 @@ export default function ImageResults({ images, query }) {
                 </div>
             </div>
 
-            {/* Lightbox */}
+            {}
             {selectedImg && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn" onClick={() => setSelectedImg(null)}>
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />

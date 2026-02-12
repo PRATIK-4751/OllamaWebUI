@@ -26,7 +26,7 @@ export default function Message({ role, content, images }) {
   return (
     <div className={`message-row flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 animate-slideUp group/msg`}>
       <div className={`flex gap-3 max-w-4xl ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-        {/* Avatar with classical frame */}
+        {}
         <Avatar className={`flex-shrink-0 w-9 h-9 transition-transform duration-300 group-hover/msg:scale-105 ${isUser
           ? 'ring-2 ring-red-500/30 shadow-lg shadow-red-500/10'
           : 'ring-2 ring-amber-600/20 dark:ring-amber-400/15 shadow-lg shadow-amber-500/10'
@@ -44,13 +44,13 @@ export default function Message({ role, content, images }) {
           </AvatarFallback>
         </Avatar>
 
-        {/* Message Bubble */}
+        {}
         <div className="relative">
           <div className={`rounded-2xl px-5 py-3.5 transition-all duration-300 ${isUser
             ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-br-md shadow-lg shadow-red-500/10'
             : 'glass rounded-bl-md shadow-md hover:shadow-lg'
             }`}>
-            {/* Images */}
+            {}
             {images && images.length > 0 && (
               <div className="flex gap-2 mb-3 flex-wrap">
                 {images.map((img, idx) => (
@@ -64,7 +64,7 @@ export default function Message({ role, content, images }) {
               </div>
             )}
 
-            {/* Content */}
+            {}
             <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : 'dark:prose-invert'}`}>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -88,7 +88,7 @@ export default function Message({ role, content, images }) {
                         className="max-w-full rounded-xl shadow-lg border border-border/20 my-4 cursor-pointer hover:opacity-90 transition-all duration-300 hover:scale-[1.01]"
                         onClick={() => window.open(src, '_blank')}
                         onError={(e) => {
-                          // Handle broken images by trying a placeholder or showing a better error UI
+
                           if (alt?.toLowerCase().includes('random') || alt?.toLowerCase().includes('generate')) {
                             e.target.src = `https://picsum.photos/seed/${encodeURIComponent(alt || 'generated')}/1200/800`
                           } else {
@@ -147,7 +147,7 @@ export default function Message({ role, content, images }) {
             </div>
           </div>
 
-          {/* Copy / Read buttons */}
+          {}
           {!isUser && content && (
             <div className="mt-1.5 opacity-0 group-hover/msg:opacity-100 transition-all duration-200 flex gap-1">
               <button

@@ -79,7 +79,7 @@ export default function CodeBlock({ language, children }) {
 
     return (
         <div className="code-block-wrapper group my-4 rounded-xl overflow-hidden border border-white/[0.06] shadow-lg">
-            {/* Header Bar */}
+            {}
             <div className="code-block-header flex items-center justify-between px-4 py-2.5"
                 style={{
                     background: 'linear-gradient(135deg, rgba(30,30,46,0.95) 0%, rgba(24,24,37,0.98) 100%)',
@@ -87,7 +87,7 @@ export default function CodeBlock({ language, children }) {
                 }}
             >
                 <div className="flex items-center gap-2.5">
-                    {/* Traffic light dots */}
+                    {}
                     <div className="flex gap-1.5 mr-2">
                         <span className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-[0_0_6px_rgba(255,95,87,0.4)]" />
                         <span className="w-3 h-3 rounded-full bg-[#febc2e] shadow-[0_0_6px_rgba(254,188,46,0.4)]" />
@@ -131,7 +131,7 @@ export default function CodeBlock({ language, children }) {
                 </button>
             </div>
 
-            {/* Code Body */}
+            {}
             <div className="code-block-body overflow-x-auto"
                 style={{
                     background: 'linear-gradient(180deg, rgba(22,22,35,0.98) 0%, rgba(18,18,28,1) 100%)',

@@ -21,7 +21,7 @@ export function useChat() {
         title,
         model: selectedModel
       })
-      
+
       setCurrentChat(chat)
       setMessages([])
       setIsLoading(false)
@@ -48,14 +48,14 @@ export function useChat() {
   const sendMessage = useCallback((content, images = []) => {
     if (!currentChat || isLoading) return
 
-    // Add user message
+
     addMessage({
       role: 'user',
       content,
       images
     })
 
-    // Add empty assistant message
+
     addMessage({
       role: 'assistant',
       content: ''
