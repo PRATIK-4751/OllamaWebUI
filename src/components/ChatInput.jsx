@@ -107,10 +107,10 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
 
   return (
     <div className="p-4 transition-all duration-300">
-      {}
+      { }
       <DocumentContext documents={documents} onRemove={removeDocument} />
 
-      {}
+      { }
       {images.length > 0 && (
         <div className="flex gap-3 mb-4 flex-wrap animate-fadeIn">
           {images.map((img, idx) => (
@@ -131,7 +131,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       )}
 
-      {}
+      { }
       {showUrlInput && (
         <div className="flex gap-2 mb-3 animate-fadeIn">
           <input
@@ -156,13 +156,13 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       )}
 
-      {}
+      { }
       <div className={`relative rounded-2xl transition-all duration-300 glass ${isFocused
         ? 'border-red-500/30 shadow-lg shadow-red-500/5'
         : 'border-border/30'
         } ${isDisabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
-          {}
+          { }
           {(config.enableImageUpload || config.enablePdfUpload) && (
             <button
               type="button"
@@ -183,7 +183,10 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
             type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
-            accept={`${config.enableImageUpload ? 'image}
+            accept={config.enableImageUpload ? "image/*,.pdf,.csv" : ".pdf,.csv"}
+            className="hidden"
+            multiple
+          />
           <textarea
             ref={textareaRef}
             value={input}
