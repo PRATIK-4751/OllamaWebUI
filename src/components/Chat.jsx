@@ -11,7 +11,7 @@ import AnalysisResults from './AnalysisResults'
 import PromptTemplates from './PromptTemplates'
 import FileBrowser from './FileBrowser'
 import { Button } from './ui/button'
-import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle } from 'lucide-react'
+import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle, Keyboard, Download, Edit2, ChevronDown, ArrowDown } from 'lucide-react'
 
 export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const {
@@ -31,9 +31,11 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     documents,
     addDocument,
     webSearchEnabled,
+    renameChat,
   } = useChatStore()
 
   const messagesEndRef = useRef(null)
+  const scrollRef = useRef(null)
   const abortRef = useRef(null)
   const [searchResults, setSearchResults] = useState(null)
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -41,6 +43,13 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const [imageQuery, setImageQuery] = useState('')
   const [fileBrowserOpen, setFileBrowserOpen] = useState(false)
   const [analysisData, setAnalysisData] = useState(null)
+  const [showScrollButton, setShowScrollButton] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
+  const [tokensPerSec, setTokensPerSec] = useState(0)
+  const lastTokenTime = useRef(0)
+  const tokenCount = useRef(0)
 
   useEffect(() => {
     const check = async () => {
@@ -52,8 +61,96 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     return () => clearInterval(interval)
   }, [setIsConnected])
 
+  // Keyboard shortcuts
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl+Shift+N → New Chat
+      if (e.ctrlKey && e.shiftKey && e.key === 'N') {
+        e.preventDefault()
+        handleNewChat()
+      }
+      // Ctrl+B → Toggle Sidebar
+      if (e.ctrlKey && e.key === 'b') {
+        e.preventDefault()
+        onToggleSidebar()
+      }
+      // Escape → Stop Generation
+      if (e.key === 'Escape' && isLoading) {
+        handleStopGeneration()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isLoading])
+
+  // Scroll handling
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current
+      setShowScrollButton(scrollHeight - scrollTop - clientHeight > 300)
+    }
+  }
+
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Drag and drop handling
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = async (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const files = Array.from(e.dataTransfer.files)
+
+    for (const file of files) {
+      // Basic support for adding files to context via drag-drop
+      // This reuses the logic from FileBrowser/ChatInput
+      if (file.type.startsWith('image/') || file.type === 'application/pdf' || file.name.endsWith('.csv') || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+        addDocument({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          fileObject: file
+        })
+      }
+    }
+  }
+
+  // Rename handling
+  const handleRename = (e) => {
+    e.preventDefault()
+    if (currentChat && renameValue.trim()) {
+      renameChat(currentChat.id, renameValue.trim())
+      setIsRenaming(false)
+    }
+  }
+
+  // Export handling
+  const handleExport = () => {
+    if (!currentChat) return
+    const content = messages.map(m => `### ${m.role === 'user' ? 'User' : 'Assistant'}\n\n${m.content}`).join('\n\n')
+    const blob = new Blob([content], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${currentChat.title || 'chat'}.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  useEffect(() => {
+    scrollToBottom()
   }, [messages])
 
   const handleNewChat = () => {
@@ -66,17 +163,15 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     setIsLoading(true)
     setSearchResults(null)
     setImageResults(null)
-    setSearchResults(null)
-    setImageResults(null)
     setImageQuery('')
     setAnalysisData(null)
 
-    const userMsg = { role: 'user', content }
+    const userMsg = { role: 'user', content, timestamp: new Date().toISOString() }
     if (images && images.length > 0) {
       userMsg.images = images
     }
     addMessage(userMsg)
-    addMessage({ role: 'assistant', content: '' })
+    addMessage({ role: 'assistant', content: '', timestamp: new Date().toISOString() })
 
     let docContext = ''
     if (documents.length > 0) {
@@ -157,8 +252,25 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         temperature,
         num_ctx: contextWindow,
       },
-      (token) => updateLastMessage(token),
-      () => { setIsLoading(false); persistMessages() },
+      (token) => {
+        updateLastMessage(token)
+
+        // Track tokens per second
+        const now = Date.now()
+        if (now - lastTokenTime.current > 1000) {
+          setTokensPerSec(tokenCount.current)
+          tokenCount.current = 0
+          lastTokenTime.current = now
+        } else {
+          tokenCount.current++
+        }
+      },
+      () => {
+        setIsLoading(false)
+        persistMessages()
+        setTokensPerSec(0)
+        tokenCount.current = 0
+      },
       (error) => {
         console.error('Chat error:', error)
         updateLastMessage(`\n\nError: ${error}`)
@@ -175,6 +287,17 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       setIsLoading(false)
       persistMessages()
     }
+  }
+
+  const handleRegenerate = () => {
+    // Find the last user message to re-send
+    const lastUserIdx = [...messages].reverse().findIndex(m => m.role === 'user')
+    if (lastUserIdx === -1) return
+    const lastUser = messages[messages.length - 1 - lastUserIdx]
+    // Remove last assistant message(s) after that user message
+    const trimmedMessages = messages.slice(0, messages.length - lastUserIdx)
+    // We can't easily modify store messages directly, so just re-send
+    handleSend(lastUser.content, lastUser.images)
   }
 
   const handleTemplateSelect = (prompt) => {
@@ -315,22 +438,72 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full pt-16">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/10 glass">
+    <div
+      className="flex-1 flex flex-col h-full pt-16 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="drag-overlay animate-fadeIn">
+          <div className="text-center animate-bounce">
+            <Plus className="h-16 w-16 mx-auto mb-4 text-primary" />
+            <h3 className="text-2xl font-bold">Drop files to add to context</h3>
+            <p className="text-muted-foreground">Images, PDFs, CSVs, Text</p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/10 glass z-10 transition-all duration-300">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="h-10 w-10 hover:bg-muted/50 rounded-xl">
             <Menu className="h-5 w-5" />
           </Button>
-          <div>
-            <h2 className="text-lg font-bold text-foreground truncate max-w-[200px] sm:max-w-xs">
-              {currentChat.title}
-            </h2>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{selectedModel}</p>
+          <div className="group relative">
+            {isRenaming ? (
+              <form onSubmit={handleRename} className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  type="text"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onBlur={() => setIsRenaming(false)}
+                  className="bg-transparent border-b border-primary outline-none font-bold text-lg min-w-[200px]"
+                />
+              </form>
+            ) : (
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onDoubleClick={() => {
+                  setRenameValue(currentChat.title)
+                  setIsRenaming(true)
+                }}
+              >
+                <h2 className="text-lg font-bold text-foreground truncate max-w-[200px] sm:max-w-xs group-hover:text-primary transition-colors">
+                  {currentChat.title}
+                </h2>
+                <Edit2 className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+              </div>
+            )}
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold flex items-center gap-2">
+              {selectedModel}
+              {isLoading && tokensPerSec > 0 && (
+                <span className="text-emerald-500 animate-pulse tokens-indicator">
+                  · {tokensPerSec} t/s
+                </span>
+              )}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {messages.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={handleExport} className="h-8 w-8 p-0 rounded-full hover:bg-muted/50" title="Export Chat">
+              <Download className="h-4 w-4" />
+            </Button>
+          )}
+
           {isConnected ? (
-            <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-emerald-500 glass-subtle px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-emerald-500 glass-subtle px-3 py-1.5 rounded-full shadow-sm shadow-emerald-500/10">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Connected
             </div>
@@ -343,7 +516,11 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth"
+      >
         {displayMessages.length === 0 && !showTyping && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground animate-fadeIn">
             <div className="w-20 h-20 rounded-3xl glass flex items-center justify-center mb-6 shadow-2xl">
@@ -352,7 +529,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
             <p className="text-xl font-bold mb-1">Begin the Dialogue</p>
             <p className="text-sm opacity-50 font-medium tracking-wide">Your local AI is ready to assist</p>
 
-            {}
+            { }
             {config.enablePromptTemplates && (
               <div className="mt-8">
                 <PromptTemplates onSelect={handleTemplateSelect} />
@@ -363,12 +540,19 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
 
         {displayMessages.map((msg, idx) => (
           <React.Fragment key={idx}>
-            <Message role={msg.role} content={msg.content} images={msg.images} />
-            {}
+            <Message
+              role={msg.role}
+              content={msg.content}
+              images={msg.images}
+              timestamp={msg.timestamp}
+              isLast={msg.role === 'assistant' && idx === displayMessages.length - 1}
+              onRegenerate={msg.role === 'assistant' && idx === displayMessages.length - 1 && !isLoading ? handleRegenerate : undefined}
+            />
+            { }
             {idx === displayMessages.length - 1 && analysisData && (
               <AnalysisResults data={analysisData} onClose={() => setAnalysisData(null)} />
             )}
-            {}
+            { }
             {msg.role === 'assistant' && idx === displayMessages.length - 1 && (
               <>
                 {searchResults && (
@@ -389,6 +573,15 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         <div ref={messagesEndRef} />
       </div>
 
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-24 right-8 bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg hover:shadow-primary/30 transition-all duration-300 animate-scroll-bounce hover:scale-110 z-20 backdrop-blur-sm"
+        >
+          <ArrowDown className="h-5 w-5" />
+        </button>
+      )}
+
       <div className="border-t border-border/10 glass px-4 py-4 sm:px-6">
         <ChatInput
           onSend={handleSend}
@@ -400,7 +593,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         />
       </div>
 
-      {}
+      { }
       <FileBrowser
         isOpen={fileBrowserOpen}
         onClose={() => setFileBrowserOpen(false)}

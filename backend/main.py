@@ -10,8 +10,15 @@ import asyncio
 import logging
 from pdfminer.high_level import extract_text
 from duckduckgo_search import DDGS
-from crawl4ai import AsyncWebCrawler
-from crawl4ai.async_configs import BrowserConfig, CrawlerRunConfig
+try:
+    from crawl4ai import AsyncWebCrawler
+    from crawl4ai.async_configs import BrowserConfig, CrawlerRunConfig
+    HAS_CRAWL4AI = True
+except ImportError:
+    HAS_CRAWL4AI = False
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger(__name__).info("crawl4ai not installed — using httpx fallback for URL fetching")
 
 
 logging.basicConfig(level=logging.INFO)
@@ -74,45 +81,40 @@ async def web_search(q: str, max_results: int = 5):
 
 
 
-        browser_config = BrowserConfig(
-            headless=True,
-            verbose=True,
-            extra_args=["--no-sandbox", "--disable-dev-shm-usage"]
-        )
-        run_config = CrawlerRunConfig(
-            word_count_threshold=10,
-            excluded_tags=['nav', 'footer', 'header', 'aside'],
-            exclude_external_links=True,
-            process_iframes=False,
-            remove_overlay_elements=True
-        )
-
-        async with AsyncWebCrawler(config=browser_config) as crawler:
-            for r in results[:2]:
-                try:
-                    logger.info(f"Crawling: {r['url']}")
-                    result = await crawler.arun(url=r["url"], config=run_config)
-
-                    if result.success:
-
-                        content = result.markdown if result.markdown else clean_text(result.html)
-                        if content:
-                             r["content"] = content[:5000]
-                             logger.info(f"Successfully crawled {r['url']} ({len(content)} chars)")
-                        else:
-                             logger.warning(f"Crawled {r['url']} but got empty content")
-                    else:
-                        logger.warning(f"Failed to crawl {r['url']}: {result.error_message}")
-
-                except Exception as e:
-                    logger.error(f"Exception exploring {r['url']}: {e}")
-
-                    try:
-                        async with httpx.AsyncClient(timeout=5) as client:
-                            resp = await client.get(r["url"], headers=HEADERS)
-                            r["content"] = clean_text(resp.text)[:3000]
-                    except:
-                        pass
+        # Enrich top results with full page content
+        for r in results[:2]:
+            try:
+                if HAS_CRAWL4AI:
+                    browser_config = BrowserConfig(
+                        headless=True,
+                        verbose=False,
+                        extra_args=["--no-sandbox", "--disable-dev-shm-usage"]
+                    )
+                    run_config = CrawlerRunConfig(
+                        word_count_threshold=10,
+                        excluded_tags=['nav', 'footer', 'header', 'aside'],
+                        exclude_external_links=True,
+                        process_iframes=False,
+                        remove_overlay_elements=True
+                    )
+                    async with AsyncWebCrawler(config=browser_config) as crawler:
+                        logger.info(f"Crawling: {r['url']}")
+                        crawl_result = await crawler.arun(url=r["url"], config=run_config)
+                        if crawl_result.success:
+                            content = crawl_result.markdown if crawl_result.markdown else clean_text(crawl_result.html)
+                            if content:
+                                r["content"] = content[:5000]
+                                logger.info(f"Successfully crawled {r['url']} ({len(content)} chars)")
+                        continue
+                # httpx fallback (used when crawl4ai is not installed or fails)
+                async with httpx.AsyncClient(timeout=8, follow_redirects=True) as client:
+                    resp = await client.get(r["url"], headers=HEADERS)
+                    fetched = clean_text(resp.text)
+                    if fetched:
+                        r["content"] = fetched[:5000]
+                        logger.info(f"Fetched {r['url']} via httpx ({len(fetched)} chars)")
+            except Exception as e:
+                logger.error(f"Error enriching {r['url']}: {e}")
 
         return {"query": q, "results": results}
 
@@ -162,40 +164,59 @@ async def fetch_url(req: UrlRequest):
     logger.info(f"Fetching URL: {req.url}")
 
     try:
-        browser_config = BrowserConfig(
-            headless=True,
-            verbose=True,
-            extra_args=["--no-sandbox", "--disable-dev-shm-usage"]
-        )
-        run_config = CrawlerRunConfig(
-             word_count_threshold=10,
-             remove_overlay_elements=True
-        )
+        content = ""
+        title = req.url
 
-        async with AsyncWebCrawler(config=browser_config) as crawler:
-            result = await crawler.arun(url=req.url, config=run_config)
+        if HAS_CRAWL4AI:
+            try:
+                browser_config = BrowserConfig(
+                    headless=True,
+                    verbose=False,
+                    extra_args=["--no-sandbox", "--disable-dev-shm-usage"]
+                )
+                run_config = CrawlerRunConfig(
+                    word_count_threshold=10,
+                    remove_overlay_elements=True
+                )
+                async with AsyncWebCrawler(config=browser_config) as crawler:
+                    result = await crawler.arun(url=req.url, config=run_config)
+                    if result.success:
+                        if result.html:
+                            try:
+                                soup = BeautifulSoup(result.html, "lxml")
+                                if soup.title and soup.title.string:
+                                    title = soup.title.string.strip()
+                            except:
+                                pass
+                        content = result.markdown if result.markdown else clean_text(result.html)
+            except Exception as crawl_err:
+                logger.warning(f"crawl4ai failed for {req.url}: {crawl_err}, falling back to httpx")
 
-            if not result.success:
-                raise Exception(f"Crawl failed: {result.error_message}")
-
-            title = req.url
-
-            if result.html:
-                 try:
-                    soup = BeautifulSoup(result.html, "lxml")
+        # httpx fallback
+        if not content:
+            async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+                resp = await client.get(req.url, headers=HEADERS)
+                resp.raise_for_status()
+                html = resp.text
+                try:
+                    soup = BeautifulSoup(html, "lxml")
                     if soup.title and soup.title.string:
                         title = soup.title.string.strip()
-                 except:
-                     pass
+                except:
+                    pass
+                content = clean_text(html)
 
-            content = result.markdown if result.markdown else clean_text(result.html)
+        if not content:
+            raise HTTPException(500, "Could not extract content from URL")
 
-            return {
-                "url": req.url,
-                "title": title,
-                "content": content[:20000],
-            }
+        return {
+            "url": req.url,
+            "title": title,
+            "content": content[:20000],
+        }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Crawl4AI failed for {req.url}: {e}")
 

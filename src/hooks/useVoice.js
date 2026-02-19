@@ -2,9 +2,11 @@ import { useState, useRef, useCallback } from 'react'
 
 export function useVoice() {
     const [isListening, setIsListening] = useState(false)
-    const [transcript, setTranscript] = useState('')
+    const [finalTranscript, setFinalTranscript] = useState('')
+    const [interimTranscript, setInterimTranscript] = useState('')
     const [isSpeaking, setIsSpeaking] = useState(false)
     const recognitionRef = useRef(null)
+    const processedCountRef = useRef(0)
 
     const isSupported = typeof window !== 'undefined' &&
         ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
@@ -19,38 +21,55 @@ export function useVoice() {
         recognition.lang = 'en-US'
 
         recognition.onresult = (event) => {
-            let final = ''
+            let newFinal = ''
             let interim = ''
-            for (let i = 0; i < event.results.length; i++) {
+            for (let i = processedCountRef.current; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
-                    final += event.results[i][0].transcript
+                    newFinal += event.results[i][0].transcript
+                    processedCountRef.current = i + 1
                 } else {
                     interim += event.results[i][0].transcript
                 }
             }
-            setTranscript(final || interim)
+            if (newFinal) {
+                setFinalTranscript(prev => prev + newFinal)
+            }
+            setInterimTranscript(interim)
         }
 
-        recognition.onend = () => setIsListening(false)
-        recognition.onerror = () => setIsListening(false)
+        recognition.onend = () => {
+            setIsListening(false)
+            setInterimTranscript('')
+        }
+        recognition.onerror = () => {
+            setIsListening(false)
+            setInterimTranscript('')
+        }
 
         recognitionRef.current = recognition
+        processedCountRef.current = 0
+        setFinalTranscript('')
+        setInterimTranscript('')
         recognition.start()
         setIsListening(true)
-        setTranscript('')
     }, [isSupported])
 
     const stopListening = useCallback(() => {
         if (recognitionRef.current) {
             recognitionRef.current.stop()
             setIsListening(false)
+            setInterimTranscript('')
         }
+    }, [])
+
+    const clearTranscript = useCallback(() => {
+        setFinalTranscript('')
+        setInterimTranscript('')
     }, [])
 
     const speak = useCallback((text) => {
         if (!window.speechSynthesis) return
         window.speechSynthesis.cancel()
-
 
         const clean = text
             .replace(/```[\s\S]*?```/g, 'code block')
@@ -76,11 +95,13 @@ export function useVoice() {
 
     return {
         isListening,
-        transcript,
+        finalTranscript,
+        interimTranscript,
         isSpeaking,
         isSupported,
         startListening,
         stopListening,
+        clearTranscript,
         speak,
         stopSpeaking,
     }

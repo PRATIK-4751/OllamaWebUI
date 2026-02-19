@@ -86,6 +86,17 @@ export const useChatStore = create((set, get) => ({
     set(updates)
   },
 
+  renameChat: (chatId, newTitle) => {
+    const chats = get().chats.map(c =>
+      c.id === chatId ? { ...c, title: newTitle } : c
+    )
+    saveChatsToStorage(chats)
+    set({ chats })
+    if (get().currentChat?.id === chatId) {
+      set({ currentChat: { ...get().currentChat, title: newTitle } })
+    }
+  },
+
   setCurrentChat: (chat) => {
     if (chat) {
 

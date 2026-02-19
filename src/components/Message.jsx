@@ -4,11 +4,20 @@ import remarkGfm from 'remark-gfm'
 import CodeBlock from './CodeBlock'
 import config from '../config'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { Bot, User, Copy, Check, Volume2, VolumeX } from 'lucide-react'
+import { Bot, User, Copy, Check, Volume2, VolumeX, RefreshCw, Clock } from 'lucide-react'
 import { useVoice } from '../hooks/useVoice'
-import configApp from '../config'
 
-export default function Message({ role, content, images }) {
+function formatRelativeTime(ts) {
+  if (!ts) return null
+  const diff = Date.now() - new Date(ts).getTime()
+  if (diff < 10000) return 'just now'
+  if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+  return new Date(ts).toLocaleDateString()
+}
+
+export default function Message({ role, content, images, timestamp, isLast, onRegenerate }) {
   const isUser = role === 'user'
   const [copiedMsg, setCopiedMsg] = useState(false)
   const { speak, stopSpeaking, isSpeaking, isSupported: voiceSupported } = useVoice()
@@ -24,9 +33,9 @@ export default function Message({ role, content, images }) {
   }, [content])
 
   return (
-    <div className={`message-row flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 animate-slideUp group/msg`}>
+    <div className={`message-row flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 ${isUser ? 'animate-msg-right' : 'animate-msg-left'} group/msg`}>
       <div className={`flex gap-3 max-w-4xl ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-        {}
+        { }
         <Avatar className={`flex-shrink-0 w-9 h-9 transition-transform duration-300 group-hover/msg:scale-105 ${isUser
           ? 'ring-2 ring-red-500/30 shadow-lg shadow-red-500/10'
           : 'ring-2 ring-amber-600/20 dark:ring-amber-400/15 shadow-lg shadow-amber-500/10'
@@ -44,13 +53,13 @@ export default function Message({ role, content, images }) {
           </AvatarFallback>
         </Avatar>
 
-        {}
+        { }
         <div className="relative">
           <div className={`rounded-2xl px-5 py-3.5 transition-all duration-300 ${isUser
             ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-br-md shadow-lg shadow-red-500/10'
             : 'glass rounded-bl-md shadow-md hover:shadow-lg'
             }`}>
-            {}
+            { }
             {images && images.length > 0 && (
               <div className="flex gap-2 mb-3 flex-wrap">
                 {images.map((img, idx) => (
@@ -64,7 +73,7 @@ export default function Message({ role, content, images }) {
               </div>
             )}
 
-            {}
+            { }
             <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : 'dark:prose-invert'}`}>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -147,7 +156,7 @@ export default function Message({ role, content, images }) {
             </div>
           </div>
 
-          {}
+          { }
           {!isUser && content && (
             <div className="mt-1.5 opacity-0 group-hover/msg:opacity-100 transition-all duration-200 flex gap-1">
               <button
@@ -160,7 +169,7 @@ export default function Message({ role, content, images }) {
                   <><Copy className="h-3 w-3" /><span>Copy</span></>
                 )}
               </button>
-              {configApp.enableVoice && voiceSupported && (
+              {config.enableVoice && voiceSupported && (
                 <button
                   onClick={() => isSpeaking ? stopSpeaking() : speak(content)}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs transition-all duration-200 hover:shadow-sm ${isSpeaking
@@ -174,6 +183,20 @@ export default function Message({ role, content, images }) {
                     <><Volume2 className="h-3 w-3" /><span>Read</span></>
                   )}
                 </button>
+              )}
+              {isLast && onRegenerate && (
+                <button
+                  onClick={onRegenerate}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground glass-subtle transition-all duration-200 hover:shadow-sm"
+                >
+                  <RefreshCw className="h-3 w-3" /><span>Regenerate</span>
+                </button>
+              )}
+              {timestamp && (
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40 ml-1">
+                  <Clock className="h-2.5 w-2.5" />
+                  {formatRelativeTime(timestamp)}
+                </span>
               )}
             </div>
           )}

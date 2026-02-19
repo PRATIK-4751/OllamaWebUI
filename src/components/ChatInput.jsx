@@ -18,14 +18,24 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
   const textareaRef = useRef(null)
 
   const { documents, addDocument, removeDocument, webSearchEnabled, setWebSearchEnabled } = useChatStore()
-  const { isListening, transcript, isSupported: voiceSupported, startListening, stopListening } = useVoice()
+  const { isListening, finalTranscript, interimTranscript, isSupported: voiceSupported, startListening, stopListening, clearTranscript } = useVoice()
+  const preVoiceInputRef = React.useRef('')
 
-
+  // When voice starts, save the current input text
   useEffect(() => {
-    if (transcript) {
-      setInput(prev => prev + transcript)
+    if (isListening) {
+      preVoiceInputRef.current = input
     }
-  }, [transcript])
+  }, [isListening])
+
+  // Replace input with pre-voice text + final transcript + interim preview
+  useEffect(() => {
+    if (isListening || finalTranscript) {
+      const base = preVoiceInputRef.current
+      const separator = base && !base.endsWith(' ') ? ' ' : ''
+      setInput(base + separator + finalTranscript + interimTranscript)
+    }
+  }, [finalTranscript, interimTranscript, isListening])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -33,6 +43,8 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
 
     onSend(input, images.length > 0 ? images : undefined)
     setInput('')
+    preVoiceInputRef.current = ''
+    clearTranscript()
     setImages([])
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -187,6 +199,33 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
             className="hidden"
             multiple
           />
+
+          {config.enableWebSearch && (
+            <button
+              type="button"
+              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+              className={`flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 ${webSearchEnabled
+                ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/30'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                }`}
+              title={webSearchEnabled ? 'Disable web search' : 'Enable web search'}
+            >
+              <Globe className="h-5 w-5" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowUrlInput(!showUrlInput)}
+            className={`flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 ${showUrlInput
+              ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/30'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+              }`}
+            title="Fetch URL content"
+          >
+            <Link className="h-5 w-5" />
+          </button>
+
           <textarea
             ref={textareaRef}
             value={input}
@@ -238,9 +277,12 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
         </div>
       </div>
 
-      <div className="text-[11px] text-muted-foreground/40 mt-2.5 text-center font-medium tracking-wide">
-        Press Enter to send · Shift+Enter for new line
-        {webSearchEnabled && <span className="text-red-500/60 ml-2">· Web Search ON</span>}
+      <div className="text-[11px] text-muted-foreground/40 mt-2.5 text-center font-medium tracking-wide flex items-center justify-center gap-3">
+        <span>Press Enter to send · Shift+Enter for new line</span>
+        {input.trim() && (
+          <span className="text-muted-foreground/30">{input.trim().split(/\s+/).length} words</span>
+        )}
+        {webSearchEnabled && <span className="text-red-500/60">· Web Search ON</span>}
       </div>
     </div>
   )

@@ -27,9 +27,17 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 - **URL Fetching** — Extract content from any website for AI context.
 - **Voice & TTS** — Speech-to-text input and "Read Aloud" voice responses.
 - **Prompt Templates** — Pre-defined high-quality prompts to get you started.
+- **Premium Animations** — Smooth message slide-ins, pulsing effects, shimmer loading, and warm glow.
+- **Auto-Rename Chat** — Double-click the chat title to rename it instantly.
+- **Drag-and-Drop** — Drop images, PDFs, CSVs, or text files directly into the chat.
+- **Scroll-to-Bottom** — Floating button appears on scroll up for quick navigation.
+- **Export Chat** — Download your conversation history as a Markdown file.
+- **Real-time Metrics** — View tokens per second (t/s) during generation.
+- **Keyboard Shortcuts** — `Ctrl+Shift+N` (New Chat), `Ctrl+B` (Sidebar), `Esc` (Stop).
 - **100% Private** — Runs entirely on your local machine.
 
 ##  Run & Update (One Command)
+
 
 To always run the latest version with current features:
 
