@@ -21,14 +21,14 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
   const { isListening, finalTranscript, interimTranscript, isSupported: voiceSupported, startListening, stopListening, clearTranscript } = useVoice()
   const preVoiceInputRef = React.useRef('')
 
-  // When voice starts, save the current input text
+  // Remember what was typed before speaking
   useEffect(() => {
     if (isListening) {
       preVoiceInputRef.current = input
     }
   }, [isListening])
 
-  // Replace input with pre-voice text + final transcript + interim preview
+  // Live speech preview
   useEffect(() => {
     if (isListening || finalTranscript) {
       const base = preVoiceInputRef.current

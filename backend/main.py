@@ -18,7 +18,7 @@ except ImportError:
     HAS_CRAWL4AI = False
     logger = logging.getLogger(__name__)
     logging.basicConfig(level=logging.INFO)
-    logging.getLogger(__name__).info("crawl4ai not installed — using httpx fallback for URL fetching")
+    logging.getLogger(__name__).info("Running light: Crawl4AI absent, falling back to HTTPX.")
 
 
 logging.basicConfig(level=logging.INFO)

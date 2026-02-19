@@ -61,7 +61,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     return () => clearInterval(interval)
   }, [setIsConnected])
 
-  // Keyboard shortcuts
+  // Power user shortcuts for speed
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Ctrl+Shift+N → New Chat
@@ -83,7 +83,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isLoading])
 
-  // Scroll handling
+  // Letting the conversation flow naturally
   const handleScroll = () => {
     if (scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current
@@ -95,7 +95,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Drag and drop handling
+  // Catching files dropped into the chat
   const handleDragOver = (e) => {
     e.preventDefault()
     setIsDragging(true)
@@ -125,7 +125,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     }
   }
 
-  // Rename handling
+  // Giving the chat a fresh new name
   const handleRename = (e) => {
     e.preventDefault()
     if (currentChat && renameValue.trim()) {
@@ -134,7 +134,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     }
   }
 
-  // Export handling
+  // Saving your thoughts for later
   const handleExport = () => {
     if (!currentChat) return
     const content = messages.map(m => `### ${m.role === 'user' ? 'User' : 'Assistant'}\n\n${m.content}`).join('\n\n')
@@ -255,7 +255,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       (token) => {
         updateLastMessage(token)
 
-        // Track tokens per second
+        // Measuring thought speed (t/s)
         const now = Date.now()
         if (now - lastTokenTime.current > 1000) {
           setTokensPerSec(tokenCount.current)
