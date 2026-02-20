@@ -11,7 +11,7 @@ import AnalysisResults from './AnalysisResults'
 import PromptTemplates from './PromptTemplates'
 import FileBrowser from './FileBrowser'
 import { Button } from './ui/button'
-import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle, Keyboard, Download, Edit2, ChevronDown, ArrowDown } from 'lucide-react'
+import { MessageSquare, Menu, Plus, Zap, Brain, Shield, AlertCircle, Download, Edit2, ArrowDown } from 'lucide-react'
 
 export default function Chat({ sidebarOpen, onToggleSidebar }) {
   const {

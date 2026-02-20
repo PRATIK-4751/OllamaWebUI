@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, FilePlus2, Square, Globe, Mic, MicOff, Link, FileBarChart } from 'lucide-react'
+import { Send, X, FilePlus2, Square, Globe, Mic, MicOff, Link } from 'lucide-react'
 import { fileToBase64, parsePdf, fetchUrlContent } from '../api'
 import { useChatStore } from '../store/chatStore'
 import { useVoice } from '../hooks/useVoice'
 import config from '../config'
 import DocumentContext from './DocumentContext'
 
-export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false, isLoading = false }) {
+export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false, isLoading = false, onOpenFileBrowser }) {
   const [input, setInput] = useState('')
   const [images, setImages] = useState([])
   const [isUploading, setIsUploading] = useState(false)
@@ -115,7 +115,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
     setShowUrlInput(false)
   }
 
-  const isDisabled = disabled
+
 
   return (
     <div className="p-4 transition-all duration-300">
@@ -172,7 +172,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
       <div className={`relative rounded-2xl transition-all duration-300 glass ${isFocused
         ? 'border-red-500/30 shadow-lg shadow-red-500/5'
         : 'border-border/30'
-        } ${isDisabled ? 'opacity-60' : ''}`}>
+        } ${disabled ? 'opacity-60' : ''}`}>
         <div className="flex items-end gap-2 p-2">
           { }
           {(config.enableImageUpload || config.enablePdfUpload) && (
@@ -234,7 +234,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder={disabled ? 'Ollama not connected...' : isUploading ? 'Uploading...' : isListening ? 'Listening...' : 'Message Ollama...'}
-            disabled={isDisabled}
+            disabled={disabled}
             rows={1}
             className="flex-1 bg-transparent border-0 outline-none resize-none py-2.5 px-2 text-base text-foreground placeholder:text-muted-foreground/60 disabled:cursor-not-allowed min-h-[40px] max-h-[200px]"
             style={{ scrollbarWidth: 'thin' }}
@@ -265,7 +265,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={(!input.trim() && images.length === 0) || isDisabled || isUploading}
+              disabled={(!input.trim() && images.length === 0) || disabled || isUploading}
               className={`flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed ${input.trim() || images.length > 0
                 ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/20 hover:shadow-red-500/30 hover:scale-105 active:scale-95'
                 : 'text-muted-foreground hover:bg-muted/80'
