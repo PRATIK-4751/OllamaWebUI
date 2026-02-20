@@ -54,21 +54,29 @@ def clean_text(html: str) -> str:
 
 
 @app.get("/api/search")
-async def web_search(q: str, max_results: int = 5):
+async def web_search(q: str, max_results: int = 8):
 
     if not q.strip():
         raise HTTPException(400, "Query cannot be empty")
 
-    logger.info(f"Adding search for: {q}")
+    logger.info(f"Searching for: {q}")
 
     try:
+        raw = []
+        # Try multiple backends for reliability
+        for backend in ["api", "html", "lite"]:
+            try:
+                with DDGS() as ddgs:
+                    raw = list(ddgs.text(q, max_results=max_results, backend=backend))
+                if raw:
+                    logger.info(f"DuckDuckGo '{backend}' returned {len(raw)} results")
+                    break
+            except Exception as e:
+                logger.warning(f"DuckDuckGo '{backend}' failed: {e}")
+                continue
 
-        try:
-            with DDGS() as ddgs:
-                raw = list(ddgs.text(q, max_results=max_results))
-        except Exception as e:
-            logger.error(f"DuckDuckGo search failed: {e}")
-            raise HTTPException(500, f"Search engine error: {e}")
+        if not raw:
+            raise HTTPException(500, "All search backends failed")
 
         results = []
         for item in raw:
@@ -79,10 +87,8 @@ async def web_search(q: str, max_results: int = 5):
                 "content": item.get("body", ""),
             })
 
-
-
-        # Enrich top results with full page content
-        for r in results[:2]:
+        # Enrich top results with full page content (concurrently for speed)
+        async def enrich(r):
             try:
                 if HAS_CRAWL4AI:
                     browser_config = BrowserConfig(
@@ -98,42 +104,44 @@ async def web_search(q: str, max_results: int = 5):
                         remove_overlay_elements=True
                     )
                     async with AsyncWebCrawler(config=browser_config) as crawler:
-                        logger.info(f"Crawling: {r['url']}")
                         crawl_result = await crawler.arun(url=r["url"], config=run_config)
                         if crawl_result.success:
                             content = crawl_result.markdown if crawl_result.markdown else clean_text(crawl_result.html)
                             if content:
-                                r["content"] = content[:5000]
-                                logger.info(f"Successfully crawled {r['url']} ({len(content)} chars)")
-                        continue
-                # httpx fallback (used when crawl4ai is not installed or fails)
-                async with httpx.AsyncClient(timeout=8, follow_redirects=True) as client:
+                                r["content"] = content[:8000]
+                                logger.info(f"Crawled {r['url']} ({len(content)} chars)")
+                    return
+                # httpx fallback
+                async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
                     resp = await client.get(r["url"], headers=HEADERS)
                     fetched = clean_text(resp.text)
                     if fetched:
-                        r["content"] = fetched[:5000]
-                        logger.info(f"Fetched {r['url']} via httpx ({len(fetched)} chars)")
+                        r["content"] = fetched[:8000]
+                        logger.info(f"Fetched {r['url']} ({len(fetched)} chars)")
             except Exception as e:
-                logger.error(f"Error enriching {r['url']}: {e}")
+                logger.warning(f"Enrich failed for {r['url']}: {e}")
+
+        # Enrich top 4 results concurrently
+        await asyncio.gather(*[enrich(r) for r in results[:4]], return_exceptions=True)
 
         return {"query": q, "results": results}
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"General search API error: {e}")
+        logger.error(f"Search API error: {e}")
         raise HTTPException(500, f"Search failed: {str(e)}")
 
 
 @app.get("/api/images")
-async def image_search(q: str, max_results: int = 8):
+async def image_search(q: str, max_results: int = 12):
 
     if not q.strip():
         raise HTTPException(400, "Query cannot be empty")
 
     try:
         with DDGS() as ddgs:
-            raw = list(ddgs.images(q, max_results=max_results))
+            raw = list(ddgs.images(q, max_results=max_results, size="Large"))
 
         images = []
         for item in raw:

@@ -6,23 +6,24 @@ export default function ImageResults({ images, query }) {
 
     if (!images || images.length === 0) return null
 
+
     return (
         <>
-            {}
+            { }
             <div className="mb-2 animate-fadeIn">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
                     <Search className="h-2.5 w-2.5 text-red-500" />
                     Images for "{query}"
                 </p>
-                <div className="flex gap-1.5 flex-wrap">
+                <div className="flex gap-2 flex-wrap">
                     {images.map((img, idx) => (
                         <button
                             key={idx}
                             onClick={() => setSelectedImg(img)}
-                            className="relative rounded-lg overflow-hidden h-14 w-14 flex-shrink-0 group border border-border/20 hover:border-red-500/40 transition-all hover:scale-105"
+                            className="relative rounded-lg overflow-hidden h-20 w-20 flex-shrink-0 group border border-border/20 hover:border-red-500/40 transition-all hover:scale-105"
                         >
                             <img
-                                src={img.thumbnail || img.url}
+                                src={img.url || img.thumbnail}
                                 alt={img.title || ''}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
@@ -33,7 +34,7 @@ export default function ImageResults({ images, query }) {
                 </div>
             </div>
 
-            {}
+            { }
             {selectedImg && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn" onClick={() => setSelectedImg(null)}>
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />

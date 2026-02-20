@@ -187,9 +187,9 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
         if (data.results && data.results.length > 0) {
           setSearchResults(data.results)
           setSearchExpanded(false)
-          searchContext = '\n\n--- WEB SEARCH RESULTS ---\n' +
-            data.results.map((r, i) => `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.content || r.snippet}`).join('\n\n') +
-            '\n--- END SEARCH RESULTS ---\n\nUse the search results above to provide an informed, up-to-date answer. Cite sources when possible.'
+          searchContext = data.results.map((r, i) =>
+            `[${i + 1}] "${r.title}"\nSource: ${r.url}\n${r.content || r.snippet}`
+          ).join('\n\n')
         }
       } catch (e) {
         console.error('Search failed:', e)
@@ -200,7 +200,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       try {
         const imgData = await searchImages(content)
         if (imgData.images && imgData.images.length > 0) {
-          setImageResults(imgData.images.slice(0, 4))
+          setImageResults(imgData.images.slice(0, 6))
           setImageQuery(content)
         }
       } catch (e) {
@@ -211,9 +211,11 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     const now = new Date()
     const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    const dateContext = `\nCurrent date and time: ${dateStr}, ${timeStr}.`
-    const systemContent = (config.systemPrompt || 'You are a helpful AI assistant.') + dateContext + docContext + searchContext
+    const dateContext = `\nToday is ${dateStr}, ${timeStr}.`
 
+    const systemContent = searchContext
+      ? `You are a helpful AI assistant with live web access. Today is ${dateStr}. You have just searched the web for the user's question. The search results are provided below. You MUST answer ONLY using the information from these search results. DO NOT make up facts. DO NOT use your training knowledge if it conflicts with the search results. Summarize the key facts from the search results and cite sources.${docContext}`
+      : (config.systemPrompt || 'You are a helpful AI assistant.') + dateContext + docContext
 
 
     let finalUserContent = userMsg.content
@@ -222,11 +224,31 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
       finalUserContent = `${relevantDocs}\n\nQuestion: ${userMsg.content}`
     }
 
+    // Build message history with RAG-style injection for search results
     const history = [
       { role: 'system', content: systemContent },
       ...messages,
-      { ...userMsg, content: finalUserContent }
-    ].map(m => ({
+    ]
+
+    // Inject search results as a context block right before the user question
+    if (searchContext) {
+      history.push({
+        role: 'user',
+        content: `Search the web for: ${content}`
+      })
+      history.push({
+        role: 'assistant',
+        content: `I found the following information from the web:\n\n${searchContext}\n\nLet me now answer your question based on these search results.`
+      })
+      history.push({
+        role: 'user',
+        content: `Based on those search results, answer: ${finalUserContent}`
+      })
+    } else {
+      history.push({ ...userMsg, content: finalUserContent })
+    }
+
+    const mappedHistory = history.map(m => ({
       role: m.role,
       content: m.content,
       ...(m.images ? { images: m.images } : {}),
@@ -248,7 +270,7 @@ export default function Chat({ sidebarOpen, onToggleSidebar }) {
     await streamChat(
       {
         model: selectedModel,
-        messages: history,
+        messages: mappedHistory,
         temperature,
         num_ctx: contextWindow,
       },

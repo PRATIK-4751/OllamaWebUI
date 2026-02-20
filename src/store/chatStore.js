@@ -56,7 +56,7 @@ export const useChatStore = create((set, get) => ({
   documents: [],
 
 
-  webSearchEnabled: false,
+  webSearchEnabled: true,
 
 
 

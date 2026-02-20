@@ -179,7 +179,7 @@ export default function ChatInput({ onSend, onStop, onAnalyze, disabled = false,
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading || isDisabled || isLoading}
+              disabled={isUploading || disabled || isLoading}
               className="flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
               title="Attach files (images, PDFs, CSVs)"
             >
