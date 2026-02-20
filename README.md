@@ -13,7 +13,7 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 ![Home Page](public/assets/home.png)
 
 ### Vision Capabilities
-![Vision](public/assets/vision.png)
+![Vision](https://github.com/PRATIK-4751/OllamaWebUI/blob/main/public/assets/visiontest.png)
 
 ### Chat Interface
 ![Chat Section](public/assets/textinterface.png)
