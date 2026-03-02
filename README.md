@@ -36,18 +36,50 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 - **Keyboard Shortcuts** — `Ctrl+Shift+N` (New Chat), `Ctrl+B` (Sidebar), `Esc` (Stop).
 - **100% Private** — Runs entirely on your local machine.
 
-##  Run & Update (One Command)
+##  Run with Docker (Any OS - One Command)
 
+**Prerequisites:** Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for your OS (Windows, Mac, or Linux).
 
-To always run the latest version with current features:
+### Quick Start (Latest Pre-built Images)
 
 ```bash
-docker-compose pull && docker-compose up -d
+docker run -d -p 3000:80 --name ollama-webui lucifero19/ollama-webui:latest
 ```
 
 Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-> This single command pulls the latest supercharged images from Docker Hub and starts the app.
+### Full Stack (Frontend + Backend)
+
+```bash
+# Create network
+docker network create ollama-network 2>/dev/null || true
+
+# Run Backend
+docker run -d -p 8000:8000 --name ollama-backend --network ollama-network lucifero19/ollama-backend:latest
+
+# Run Frontend (connects to backend automatically)
+docker run -d -p 3000:80 --name ollama-webui --network ollama-network -e BACKEND_URL=http://ollama-backend:8000 lucifero19/ollama-webui:latest
+```
+
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+
+### Update to Latest Version
+
+```bash
+docker pull lucifero19/ollama-webui:latest
+docker pull lucifero19/ollama-backend:latest
+docker stop ollama-webui ollama-backend 2>/dev/null || true
+docker rm ollama-webui ollama-backend 2>/dev/null || true
+
+# Then re-run the commands above
+```
+
+### Stop & Clean Up
+
+```bash
+docker stop ollama-webui ollama-backend
+docker rm ollama-webui ollama-backend
+```
 
 ##  Requirements
 
