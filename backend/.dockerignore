@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Environment files (contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Virtual environments
+venv
+env
+.venv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+.pytest_cache
+.coverage
+htmlcov
+
+# Temporary files
+*.tmp
+.cache

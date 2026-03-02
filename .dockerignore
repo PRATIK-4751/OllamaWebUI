@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Environment files (contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Node modules (will be installed in container)
+node_modules
+
+# Build output (will be built in container)
+dist
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+coverage
+.nyc_output
+
+# Temporary files
+*.tmp
+.cache

@@ -1,7 +1,8 @@
 services:
   ollama-webui:
-    image: lucifero19/ollama-webui:latest
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ollama-webui
     ports:
       - "3000:80"
@@ -12,8 +13,9 @@ services:
       - ollama-network
 
   backend:
-    image: lucifero19/ollama-backend:latest
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: ollama-backend
     ports:
       - "8000:8000"
