@@ -36,49 +36,33 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 - **Keyboard Shortcuts** — `Ctrl+Shift+N` (New Chat), `Ctrl+B` (Sidebar), `Esc` (Stop).
 - **100% Private** — Runs entirely on your local machine.
 
-##  Run with Docker (Any OS - One Command)
+##  Run with Docker (One Command — Any OS)
 
 **Prerequisites:** Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for your OS (Windows, Mac, or Linux).
 
-### Quick Start (Latest Pre-built Images)
+### Quick Start
 
 ```bash
-docker run -d -p 3000:80 --name ollama-webui lucifero19/ollama-webui:latest
+# Download docker-compose.yml and start everything
+curl -O https://raw.githubusercontent.com/PRATIK-4751/OllamaWebUI/main/docker-compose.yml
+docker compose up -d
 ```
 
-Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+Open **[http://localhost:3000](http://localhost:3000)** and you're done!
 
-### Full Stack (Frontend + Backend)
-
-```bash
-# Create network
-docker network create ollama-network 2>/dev/null || true
-
-# Run Backend
-docker run -d -p 8000:8000 --name ollama-backend --network ollama-network lucifero19/ollama-backend:latest
-
-# Run Frontend (connects to backend automatically)
-docker run -d -p 3000:80 --name ollama-webui --network ollama-network -e BACKEND_URL=http://ollama-backend:8000 lucifero19/ollama-webui:latest
-```
-
-Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+> Both frontend and backend images are automatically downloaded from Docker Hub.
 
 ### Update to Latest Version
 
 ```bash
-docker pull lucifero19/ollama-webui:latest
-docker pull lucifero19/ollama-backend:latest
-docker stop ollama-webui ollama-backend 2>/dev/null || true
-docker rm ollama-webui ollama-backend 2>/dev/null || true
-
-# Then re-run the commands above
+docker compose pull
+docker compose up -d
 ```
 
 ### Stop & Clean Up
 
 ```bash
-docker stop ollama-webui ollama-backend
-docker rm ollama-webui ollama-backend
+docker compose down
 ```
 
 ##  Requirements
@@ -101,7 +85,6 @@ npm install
 npm run dev
 
 # Install & Run Backend (in /backend)
-pip install -r requirements.txt
 pip install -r requirements.txt
 playwright install --with-deps chromium
 uvicorn main:app --reload --port 8000

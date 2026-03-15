@@ -4,7 +4,7 @@ httpx
 beautifulsoup4
 lxml
 pdfminer.six
-duckduckgo-search
+ddgs
 python-multipart
 crawl4ai
 playwright

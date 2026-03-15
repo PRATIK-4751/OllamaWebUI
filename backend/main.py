@@ -9,7 +9,7 @@ import io
 import asyncio
 import logging
 from pdfminer.high_level import extract_text
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 try:
     from crawl4ai import AsyncWebCrawler
     from crawl4ai.async_configs import BrowserConfig, CrawlerRunConfig
