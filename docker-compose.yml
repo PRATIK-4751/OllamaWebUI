@@ -1,37 +1,32 @@
-# ============================================
-#  Ollama WebUI — Docker Compose
-#  Run:  docker compose up -d
-#  Open: http://localhost:3000
-# ============================================
+version: '3.8'
 
 services:
-  backend:
-    image: lucifero19/ollama-backend:latest
-    container_name: ollama-backend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ollama_webui_frontend
     ports:
-      - "8000:8000"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/api/health')"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 40s
-    networks:
-      - ollama-network
-
-  ollama-webui:
-    image: lucifero19/ollama-webui:latest
-    container_name: ollama-webui
-    ports:
-      - "3000:80"
-    restart: unless-stopped
+      - "5173:80"  # Mapping port 5173 on the host to port 80 in NGINX
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
+    restart: unless-stopped
     networks:
-      - ollama-network
+      - webui-net
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ollama_webui_backend
+    ports:
+      - "8000:8000" # Allowing direct testing of FastAPI backend
+    restart: unless-stopped
+    networks:
+      - webui-net
+    volumes:
+      - ./backend:/app  # Optional: syncs backend code for fast iteration without rebuilding
+      
 networks:
-  ollama-network:
+  webui-net:
     driver: bridge
