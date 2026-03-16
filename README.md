@@ -36,36 +36,58 @@ A beautiful, high-aesthetic web interface for your local Ollama models. Fast, pr
 - **Keyboard Shortcuts** — `Ctrl+Shift+N` (New Chat), `Ctrl+B` (Sidebar), `Esc` (Stop).
 - **100% Private** — Runs entirely on your local machine.
 
-##  Run with Docker (One Command — Any OS)
+## 🚀 Quick Start - Run Locally
 
-**Prerequisites:** Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for your OS (Windows, Mac, or Linux).
+**After cloning this repository, follow these steps:**
 
-### Quick Start
+### Prerequisites
+- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
+- **Python 3.11+** - [Download](https://www.python.org/)
+- **Ollama** running locally with models installed
 
-```bash
-# Download docker-compose.yml and start everything
-curl -O https://raw.githubusercontent.com/PRATIK-4751/OllamaWebUI/main/docker-compose.yml
-docker compose up -d
-```
-
-Open **[http://localhost:3000](http://localhost:3000)** and you're done!
-
-> Both frontend and backend images are automatically downloaded from Docker Hub.
-
-### Update to Latest Version
+### Step 1: Install Backend Dependencies
 
 ```bash
-docker compose pull
-docker compose up -d
+cd backend
+pip install -r requirements.txt
+playwright install --with-deps chromium
 ```
 
-### Stop & Clean Up
+### Step 2: Start the Backend Server
 
 ```bash
-docker compose down
+# In the backend folder
+python main.py
+# or
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-##  Requirements
+Backend will run on **http://localhost:8000**
+
+### Step 3: Install Frontend Dependencies
+
+Open a new terminal and navigate to the project root:
+
+```bash
+cd OllamaWebUI
+npm install
+```
+
+### Step 4: Start the Frontend Server
+
+```bash
+npm run dev
+```
+
+Frontend will run on **http://localhost:5173** (or auto-selected port)
+
+### Step 5: Access the Application
+
+Open your browser to **http://localhost:5173**
+
+---
+
+## 🔧 Configure Ollama
 
 **Ollama** must be running with CORS enabled:
 
@@ -77,16 +99,5 @@ $env:OLLAMA_ORIGINS="*"; ollama serve
 OLLAMA_ORIGINS="*" ollama serve
 ```
 
-##  Local Development
-
-```bash
-# Install & Run Frontend
-npm install
-npm run dev
-
-# Install & Run Backend (in /backend)
-pip install -r requirements.txt
-playwright install --with-deps chromium
-uvicorn main:app --reload --port 8000
-```
+---
 
